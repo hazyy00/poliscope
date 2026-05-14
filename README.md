@@ -195,6 +195,5 @@ poliscope/
 
 ## 기여
 
-현재 1인 개발 중. 버그 제보는 GitHub Issues로.
-
+문의는 poliscope@poliscope.kr 로 이메일 부탁드립니다.
 오류가 있는 AI 요약은 각 법안 페이지의 "이 요약이 틀렸어요" 버튼으로 신고해주세요.
