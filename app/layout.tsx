@@ -7,7 +7,8 @@ const notoSerif = Noto_Serif_KR({ subsets: ['latin'], weight: ['300', '400', '50
 const imFell = IM_Fell_English({ subsets: ['latin'], weight: ['400'], style: ['normal', 'italic'], variable: '--font-fell' })
 
 export const metadata: Metadata = {
-  title: 'PoliScope — 대한민국 국회 투명성 플랫폼',
+  metadataBase: new URL('https://poliscope.kr'),
+  title: 'PoliScope',
   description: '22대 국회 300명 의원의 발의·표결·출석을 누구나 쉽게 검색하고 볼 수 있는 웹서비스',
   openGraph: {
     title: 'PoliScope',

@@ -1,7 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { KoreaMap } from '@/components/map/KoreaMap'
+
+let introPlayed = false
 
 // ── DECO 1: 의원 프로필 — 세로 바 그리드 (출석률) ──────────────
 function Deco1() {
@@ -159,14 +163,31 @@ const SNAP_PANELS = [
 const SECTIONS = ['hero', 'p1', 'p2', 'p3']
 
 export default function LandingPage() {
+  const router = useRouter()
   const [loaderOut, setLoaderOut] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [navVisible, setNavVisible] = useState(false)
   const [activeSection, setActiveSection] = useState(0)
   const [dotsVisible, setDotsVisible] = useState(false)
   const swRef = useRef<HTMLDivElement>(null)
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  const handleRegionClick = (name: string) => {
+    router.push(`/regions/${encodeURIComponent(name)}`)
+  }
+
+  useLayoutEffect(() => {
+    if (introPlayed) {
+      setLoaderOut(true)
+      setLoaded(true)
+      setNavVisible(true)
+      setDotsVisible(true)
+    }
+  }, [])
 
   useEffect(() => {
+    if (introPlayed) return
+
     const l1 = document.getElementById('l1')
     const l2 = document.getElementById('l2')
     const l3 = document.getElementById('l3')
@@ -174,28 +195,36 @@ export default function LandingPage() {
     const lf = document.getElementById('lf')
     const ln = document.getElementById('ln')
 
-    setTimeout(() => l1?.classList.add('s'), 180)
-    setTimeout(() => l2?.classList.add('s'), 650)
-    setTimeout(() => l3?.classList.add('s'), 1100)
-    setTimeout(() => {
+    let iv: ReturnType<typeof setInterval>
+    const t1 = setTimeout(() => l1?.classList.add('s'), 180)
+    const t2 = setTimeout(() => l2?.classList.add('s'), 650)
+    const t3 = setTimeout(() => l3?.classList.add('s'), 1100)
+    const t4 = setTimeout(() => {
       lb?.classList.add('s')
       if (lf) lf.style.width = '100%'
       let n = 0
-      const iv = setInterval(() => {
+      iv = setInterval(() => {
         n = Math.min(n + 3, 100)
         if (ln) ln.textContent = n + '%'
         if (n >= 100) clearInterval(iv)
       }, 64)
     }, 1400)
-
-    setTimeout(() => {
+    const t5 = setTimeout(() => {
       setLoaderOut(true)
-      setTimeout(() => {
+      const t6 = setTimeout(() => {
         setLoaded(true)
         setNavVisible(true)
+        introPlayed = true
         setTimeout(() => setDotsVisible(true), 600)
       }, 700)
+      timersRef.current.push(t6)
     }, 3500)
+
+    timersRef.current = [t1, t2, t3, t4, t5]
+    return () => {
+      timersRef.current.forEach(clearTimeout)
+      clearInterval(iv)
+    }
   }, [])
 
   useEffect(() => {
@@ -388,13 +417,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* RIGHT — map placeholder */}
-            <div style={{ height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'linear-gradient(rgba(26,25,22,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(26,25,22,.028) 1px,transparent 1px)', backgroundSize: '50px 50px' }} />
-              <div style={{ textAlign: 'center', color: 'var(--t3)' }}>
-                <div style={{ fontSize: 13 }}>지역구 지도</div>
-                <div style={{ fontSize: 11, marginTop: 4 }}>준비 중</div>
-              </div>
+            {/* RIGHT — interactive Korea map */}
+            <div style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+              <KoreaMap className="absolute inset-0" onRegionClick={handleRegionClick} />
             </div>
           </div>
 

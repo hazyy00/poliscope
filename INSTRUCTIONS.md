@@ -53,13 +53,15 @@
 | 작업 | 읽어야 할 파일 |
 |------|--------------|
 | 전체 파악 | `INSTRUCTIONS.md` → `README.md` |
-| DB 작업 | `supabase/schema.sql` → `lib/supabase.ts` |
+| DB 작업 | `schema.sql` → `lib/supabase.ts` |
 | 데이터 수집 | `scripts/collect_*.py` → `.env.example` |
 | AI 요약 | `scripts/generate_summaries.py` → `lib/claude.ts` |
 | 랜딩 UI | `design/poliscope.html` → `app/(landing)/page.tsx` |
 | 의원 페이지 | `components/members/` → `app/members/` |
 | 법안 페이지 | `components/bills/` → `app/bills/` |
-| 지도 컴포넌트 | `design/poliscope.html` (지도 JS 섹션) → `components/map/KoreaMap.tsx` |
+| 지도 컴포넌트 | `components/map/KoreaMap.tsx` |
+| 지역 상세 페이지 | `lib/regions.ts` → `app/regions/[name]/page.tsx` |
+| 시장·도지사 데이터 | `lib/regions.ts` (REGIONS_DATA의 governor 필드, 민선 8기 정적 데이터) |
 
 ---
 
@@ -118,9 +120,12 @@
 poliscope/
 ├── app/                          # Next.js App Router
 │   ├── (landing)/
-│   │   └── page.tsx              # 메인 랜딩 (design/poliscope.html 기반)
+│   │   └── page.tsx              # 메인 랜딩 (인터랙티브 SVG 지도, 인트로 애니메이션)
+│   ├── regions/
+│   │   └── [name]/
+│   │       └── page.tsx          # 지역 상세 (시장·도지사 + 의석분포 + 지역구 의원)
 │   ├── members/
-│   │   ├── page.tsx              # 의원 목록/검색
+│   │   ├── page.tsx              # 의원 목록/검색 (시장·도지사 섹션 포함)
 │   │   └── [id]/
 │   │       └── page.tsx          # 의원 상세 프로필
 │   ├── bills/
@@ -131,40 +136,42 @@ poliscope/
 │   │   ├── page.tsx              # 표결 목록
 │   │   └── [id]/
 │   │       └── page.tsx          # 표결 상세
-│   ├── map/
-│   │   └── page.tsx              # 지역구 지도
 │   └── api/
-│       ├── members/route.ts
-│       ├── bills/route.ts
-│       └── votes/route.ts
+│       └── subscribe/route.ts    # 뉴스레터 구독
 ├── components/
 │   ├── map/
-│   │   └── KoreaMap.tsx          # 인터랙티브 한국 지도 (목업에서 이식)
+│   │   └── KoreaMap.tsx          # SVG 한국 지도 (17개 시·도, 클릭 시 지역 상세로 이동)
 │   ├── members/
-│   │   ├── MemberCard.tsx
-│   │   ├── MemberSearch.tsx
-│   │   └── VoteHistory.tsx
+│   │   ├── MemberCard.tsx        # 의원 카드 (→ /members/[id])
+│   │   ├── MemberSearch.tsx      # 이름·정당·지역 필터 (router.replace로 히스토리 최소화)
+│   │   ├── GovernorCard.tsx      # 시장·도지사 카드 (→ /regions/[name])
+│   │   ├── AttendanceChart.tsx
+│   │   └── VotingRecord.tsx
 │   ├── bills/
 │   │   ├── BillCard.tsx
 │   │   ├── BillSearch.tsx
-│   │   └── AISummary.tsx         # 환각 방어 컴포넌트
-│   ├── votes/
-│   │   └── VoteChart.tsx
-│   └── ui/                       # shadcn/ui 컴포넌트
-├── scripts/                      # 데이터 수집 (Python)
-│   ├── collect_members.py        # 의원 정보 수집
-│   ├── collect_bills.py          # 법안 수집
-│   ├── collect_votes.py          # 표결 수집
-│   ├── generate_summaries.py     # AI 요약 배치 생성
-│   └── validate_data.py          # 데이터 검증
+│   │   └── AISummary.tsx
+│   └── ui/
+│       ├── PartyBadge.tsx
+│       ├── StatusBadge.tsx
+│       └── Pagination.tsx
 ├── lib/
+│   ├── regions.ts                # 17개 시·도 정적 데이터
+│   │                             #   - 22대 총선 의석 (party, seats, rate, color)
+│   │                             #   - 민선 8기 시장·도지사 (name, title, party, term)
 │   ├── supabase.ts               # DB 클라이언트
-│   ├── assembly-api.ts           # 국회 API 래퍼
-│   └── claude.ts                 # AI 클라이언트
+│   ├── types.ts                  # Member, Bill, Vote 타입
+│   ├── constants.ts              # PARTIES, BILL_STATUSES
+│   └── utils.ts                  # getPartyColor, formatDate 등
+├── scripts/                      # 데이터 수집 (Python)
+│   ├── collect_members.py
+│   ├── collect_bills.py
+│   ├── collect_votes.py
+│   ├── generate_summaries.py
+│   └── validate_data.py
 ├── design/
-│   └── poliscope.html            # 완성된 디자인 목업 (참조용)
-├── public/
-│   └── korea-provinces.json      # 행정구역 GeoJSON
+│   └── poliscope.html            # 완성된 디자인 목업 (참조용, 수정 금지)
+├── schema.sql                    # Supabase DB 스키마
 ├── requirements.txt              # Python 의존성
 ├── package.json
 └── .env.local                    # 환경변수 (절대 커밋 금지)

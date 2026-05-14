@@ -23,14 +23,14 @@ PoliScope는 이 데이터를 한곳에서 쉽게 검색할 수 있도록 정리
 
 | 페이지 | 기능 |
 |--------|------|
-| `/` | 메인 랜딩. 전국 지역구 지도 인터랙션, 실시간 통계 |
-| `/members` | 의원 검색. 이름·지역구·정당 필터 |
+| `/` | 메인 랜딩. 전국 지역구 SVG 지도 인터랙션 (클릭 시 지역 상세로 이동) |
+| `/regions/[name]` | 지역 상세. 시장·도지사 카드, 의석 분포 바, 지역구 의원 그리드 |
+| `/members` | 의원 검색. 이름·지역구·정당 필터. 시장·도지사 섹션 포함 |
 | `/members/[id]` | 의원 상세 프로필. 발의 법안, 표결 이력, 출석률, 재산 |
 | `/bills` | 법안 검색. 상태(계류·가결·폐기)·위원회·발의자 필터 |
 | `/bills/[id]` | 법안 상세. AI 요약, 페르소나별 해석, 원문 링크 |
 | `/votes` | 본회의 표결 목록 |
 | `/votes/[id]` | 표결 상세. 정당별·의원별 찬반 현황 |
-| `/map` | 전국 지역구 지도 |
 
 ---
 
@@ -164,18 +164,29 @@ GitHub Actions 자동 실행을 위해 Repository > Settings > Secrets에 아래
 
 ```
 poliscope/
-├── app/                        # Next.js 14 App Router
-│   ├── (landing)/page.tsx      # 메인 랜딩 페이지
+├── app/                        # Next.js App Router
+│   ├── (landing)/page.tsx      # 메인 랜딩 페이지 (인터랙티브 지도)
+│   ├── regions/[name]/         # 지역 상세 페이지 (시장·도지사 + 지역구 의원)
 │   ├── members/                # 의원 검색 및 프로필
 │   ├── bills/                  # 법안 검색 및 상세
 │   ├── votes/                  # 표결 목록 및 상세
 │   └── api/                    # API Routes
-├── components/                 # React 컴포넌트
+├── components/
+│   ├── map/
+│   │   └── KoreaMap.tsx        # 인터랙티브 SVG 지도 (17개 시·도)
+│   ├── members/
+│   │   ├── MemberCard.tsx
+│   │   ├── MemberSearch.tsx
+│   │   └── GovernorCard.tsx    # 시장·도지사 카드
+│   ├── bills/
+│   └── ui/
+├── lib/
+│   ├── regions.ts              # 17개 시·도 데이터 (의석·시장·도지사, 민선 8기)
+│   ├── supabase.ts
+│   ├── types.ts
+│   ├── constants.ts
+│   └── utils.ts
 ├── scripts/                    # Python 데이터 수집 스크립트
-│   ├── collect_members.py
-│   ├── collect_bills.py
-│   ├── collect_votes.py
-│   └── validate_data.py
 ├── design/
 │   └── poliscope.html          # UI 목업 (참조용, 수정 금지)
 ├── schema.sql                  # Supabase DB 스키마
