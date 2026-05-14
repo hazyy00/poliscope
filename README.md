@@ -1,116 +1,162 @@
 # PoliScope
 
-> 데이터로 보는 민주주의 — 대한민국 국회 투명성 플랫폼
+**대한민국 국회 투명성 플랫폼** · [poliscope.kr](https://poliscope.kr)
 
-poliscope.kr
-
----
-
-## 무엇을 만드는가
-
-22대 국회 300명 의원의 발의·표결·출석을 누구나 쉽게 검색하고 볼 수 있는 웹서비스.
-기존 의안정보시스템은 존재하지만 일반 시민이 쓰기 어렵다. 정보 불균형이 정치 양극화의 한 원인이라는 진단에서 출발.
-
-**차별점:** 좌도 우도 아닌 중립 포지셔닝. AI가 법조문을 직장인·자영업자·학생 언어로 풀어내는 페르소나 해석.
+22대 국회 의원 286명의 발의·표결·출석 기록을 누구나 쉽게 검색하고 볼 수 있는 웹서비스입니다.
 
 ---
 
-## 빠른 시작
+## 왜 만들었나요?
+
+국회 의안정보시스템(likms.assembly.go.kr)은 데이터가 있지만 일반 시민이 쓰기 어렵습니다. 어떤 의원이 어떤 법안을 발의했는지, 어떤 표결에서 어떻게 찍었는지 찾아보려면 여러 페이지를 오가야 합니다.
+
+PoliScope는 이 데이터를 한곳에서 쉽게 검색할 수 있도록 정리합니다. 좌도 우도 아닌 중립 포지셔닝으로, 데이터 그대로를 보여줍니다.
+
+**일반 서비스와의 차이점:**
+- 국회 공공 API 데이터를 매일 자동 수집해 항상 최신 상태를 유지합니다
+- AI가 복잡한 법조문을 직장인·자영업자·학생 언어로 풀어서 설명합니다
+- AI 요약은 사전 생성 후 원문 대조 검증을 거쳐 저장됩니다. 환각 방지가 핵심입니다
+
+---
+
+## 주요 기능
+
+| 페이지 | 기능 |
+|--------|------|
+| `/` | 메인 랜딩. 전국 지역구 지도 인터랙션, 실시간 통계 |
+| `/members` | 의원 검색. 이름·지역구·정당 필터 |
+| `/members/[id]` | 의원 상세 프로필. 발의 법안, 표결 이력, 출석률, 재산 |
+| `/bills` | 법안 검색. 상태(계류·가결·폐기)·위원회·발의자 필터 |
+| `/bills/[id]` | 법안 상세. AI 요약, 페르소나별 해석, 원문 링크 |
+| `/votes` | 본회의 표결 목록 |
+| `/votes/[id]` | 표결 상세. 정당별·의원별 찬반 현황 |
+| `/map` | 전국 지역구 지도 |
+
+---
+
+## 기술 스택
+
+**프론트엔드**
+- Next.js 14 (App Router), TypeScript, Tailwind CSS
+- shadcn/ui, Recharts, D3.js + TopoJSON (지역구 지도)
+- 폰트: Noto Serif KR, Noto Sans KR, IM Fell English
+
+**백엔드 및 인프라**
+- Supabase (PostgreSQL + pgvector)
+- Upstash Redis (캐싱)
+- GitHub Actions (매일 새벽 3시 데이터 수집 크론잡)
+- Vercel (배포)
+
+**AI**
+- Claude Haiku: 법안 배치 요약 (사전 생성, 비용 최적화)
+- Claude Sonnet: 향후 실시간 Q&A 기능 (MAU 증가 후)
+
+---
+
+## 로컬 실행
 
 ```bash
 # 1. 레포 클론
-git clone https://github.com/your-id/poliscope.git
+git clone https://github.com/hazyy00/poliscope.git
 cd poliscope
 
 # 2. 환경변수 설정
 cp .env.example .env.local
-# .env.local 편집 (아래 환경변수 섹션 참조)
+# .env.local 파일을 열어 각 항목 입력 (아래 환경변수 섹션 참조)
 
-# 3. 프론트엔드 의존성
+# 3. 프론트엔드 의존성 설치
 npm install
 
-# 4. Python 의존성 (데이터 수집용)
+# 4. Python 의존성 설치 (데이터 수집 스크립트용)
 pip install -r requirements.txt
 
-# 5. 개발 서버
+# 5. 개발 서버 실행
 npm run dev
+# http://localhost:3000 접속
 ```
 
 ---
 
 ## 환경변수
 
-`.env.local` 에 아래 값 입력:
+`.env.local` 파일에 아래 값을 입력합니다.
 
 ```bash
-# 국회 공공데이터 API (open.assembly.go.kr 에서 발급)
+# 국회 공공데이터 API
+# 발급: https://open.assembly.go.kr -> 오픈API -> 인증키 발급 (무료)
 ASSEMBLY_API_KEY=
 
-# Supabase (supabase.com 에서 프로젝트 생성)
+# Supabase
+# 발급: https://supabase.com -> 프로젝트 생성 -> Settings -> API
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# Anthropic (console.anthropic.com)
+# Anthropic Claude API
+# 발급: https://console.anthropic.com -> API Keys
 ANTHROPIC_API_KEY=
 
-# Upstash Redis (upstash.com)
+# Upstash Redis (선택, 캐싱용)
+# 발급: https://upstash.com -> Redis 데이터베이스 생성
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
 ---
 
-## 데이터 수집
+## 데이터베이스 설정
 
-### 최초 전체 수집 (처음 한 번만)
-
-```bash
-# 의원 300명
-python scripts/collect_members.py
-
-# 법안 전체 (17,000+건, 시간 걸림)
-python scripts/collect_bills.py --full
-
-# 표결 전체
-python scripts/collect_votes.py --full
-
-# AI 요약 배치 생성 (법안당 약 $0.004, 전체 약 $70)
-python scripts/generate_summaries.py --batch-size 50
-```
-
-### 일별 증분 수집 (Vercel Cron이 자동 실행)
+1. [supabase.com](https://supabase.com) 에서 새 프로젝트 생성
+2. Supabase 대시보드 > SQL Editor 열기
+3. `schema.sql` 내용을 붙여넣고 실행
 
 ```bash
-python scripts/collect_bills.py --since yesterday
-python scripts/collect_votes.py --since yesterday
-python scripts/generate_summaries.py --unsummarized-only
-```
-
-### 데이터 검증
-
-```bash
-python scripts/validate_data.py
-# 누락 의원, 이상 법안수, 환각 샘플링 보고서 출력
+# macOS에서 클립보드로 복사
+cat schema.sql | pbcopy
 ```
 
 ---
 
-## 데이터베이스 설정
+## 데이터 수집
 
-Supabase SQL 에디터에서 실행:
+### 최초 전체 수집 (처음 한 번)
 
 ```bash
-# 스키마 적용
-cat supabase/schema.sql | pbcopy
-# Supabase Dashboard > SQL Editor > 붙여넣기 > Run
+# 의원 정보 수집 (약 286명)
+python3 scripts/collect_members.py
+
+# 법안 전체 수집 (17,000+건, 수 분 소요)
+python3 scripts/collect_bills.py --full
+
+# 표결 기록 전체 수집
+python3 scripts/collect_votes.py --full
+
+# 데이터 이상 여부 확인
+python3 scripts/validate_data.py
 ```
 
-pgvector 확장 활성화:
+### 일별 증분 수집
 
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
+GitHub Actions가 매일 새벽 3시(KST)에 자동 실행합니다. 수동으로 실행하려면:
+
+```bash
+python3 scripts/collect_bills.py --since 2024-01-01
+python3 scripts/collect_votes.py --since 2024-01-01
 ```
+
+GitHub Actions 자동 실행을 위해 Repository > Settings > Secrets에 아래 항목을 등록해야 합니다:
+`ASSEMBLY_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
+---
+
+## AI 요약 품질 관리
+
+모든 AI 요약은 실시간 생성이 아닌 사전 배치 생성 방식입니다.
+
+- 신뢰도 점수 0.7 미만이면 저장하지 않고 원문 링크만 표시합니다
+- 사용자 신고 5건 누적 시 자동으로 숨깁니다
+- 매월 랜덤 50건을 수동 검수합니다
+- 모든 AI 요약 옆에 "AI 생성 요약입니다. 법적 판단 근거로 사용하지 마세요." 문구를 표시합니다
 
 ---
 
@@ -118,82 +164,38 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 ```
 poliscope/
-├── app/                    # Next.js 14 App Router
-│   ├── (landing)/page.tsx  # 메인 랜딩
-│   ├── members/            # 의원 검색·프로필
-│   ├── bills/              # 법안 검색·상세
-│   ├── votes/              # 표결 목록·상세
-│   ├── map/                # 지역구 지도
-│   └── api/                # API Routes
-├── components/             # React 컴포넌트
-├── scripts/                # Python 데이터 수집
-├── supabase/               # DB 스키마·마이그레이션
-├── design/                 # UI 목업 (참조용)
-│   └── poliscope.html      # 완성된 디자인
-├── public/
-│   └── korea-provinces.json
-├── requirements.txt
-└── INSTRUCTIONS.md         # Claude Code용 상세 지침
+├── app/                        # Next.js 14 App Router
+│   ├── (landing)/page.tsx      # 메인 랜딩 페이지
+│   ├── members/                # 의원 검색 및 프로필
+│   ├── bills/                  # 법안 검색 및 상세
+│   ├── votes/                  # 표결 목록 및 상세
+│   └── api/                    # API Routes
+├── components/                 # React 컴포넌트
+├── scripts/                    # Python 데이터 수집 스크립트
+│   ├── collect_members.py
+│   ├── collect_bills.py
+│   ├── collect_votes.py
+│   └── validate_data.py
+├── design/
+│   └── poliscope.html          # UI 목업 (참조용, 수정 금지)
+├── schema.sql                  # Supabase DB 스키마
+├── requirements.txt            # Python 의존성
+└── .env.example                # 환경변수 예시
 ```
-
----
-
-## 주요 페이지
-
-| 경로 | 설명 |
-|------|------|
-| `/` | 랜딩 (지도 인터랙션, 통계, 기능 소개) |
-| `/members` | 의원 검색 (이름·지역구·정당 필터) |
-| `/members/[id]` | 의원 상세 (발의·표결·출석·재산) |
-| `/bills` | 법안 검색 (상태·위원회 필터) |
-| `/bills/[id]` | 법안 상세 (AI 요약·원문 링크) |
-| `/votes` | 표결 목록 |
-| `/votes/[id]` | 표결 상세 (정당별 찬반) |
-| `/map` | 전국 지역구 지도 |
-
----
-
-## AI 요약 품질 관리
-
-모든 AI 요약은 사전생성 + 검증 후 DB 저장. 실시간 생성 없음.
-
-- 신뢰도 < 0.7 → 저장 안 함, 원문 링크만 표시
-- 사용자 신고 5건 누적 → 자동 숨김
-- 매월 랜덤 50건 수동 검수
-
----
-
-## 기술 결정 로그
-
-**왜 Next.js 14?** App Router의 서버 컴포넌트로 초기 로드 성능 확보. SSG로 법안·의원 페이지 정적 생성.
-
-**왜 Supabase?** PostgreSQL + pgvector + 실시간 구독 + 무료 티어. 혼자 운영하기 적합.
-
-**왜 Haiku로 요약?** Sonnet 대비 1/5 비용, 법조문 요약 품질 차이 미미. 100건 블라인드 테스트 결과.
-
-**왜 배치 API?** 50% 비용 절감. 사전생성이라 지연 무관.
 
 ---
 
 ## 로드맵
 
-- **0~3개월:** 데이터 파이프라인 + 검색/프로필 + AI 요약 (MVP)
-- **3~6개월:** 페르소나별 해석 AI 레이어
-- **6~9개월:** 스타트업 규제 내비게이터 B2B 파일럿
-- **9~12개월:** 트랙션에 따라 방향 결정
+- **1단계 (현재):** 데이터 파이프라인 완성. 의원·법안·표결 데이터 매일 자동 수집
+- **2단계:** 검색·프로필 UI. 의원 검색, 법안 검색, 표결 목록 페이지
+- **3단계:** AI 요약 레이어. 법안 요약, 페르소나별 해석, 유사 법안 추천
+- **이후:** 트랙션에 따라 방향 결정
 
 ---
 
 ## 법적 고지
 
-이 서비스의 데이터는 국회 공공데이터 API 기반이며, AI 요약은 참고용입니다.
-법적 판단의 근거로 사용하지 마세요. 원문은 항상 의안정보시스템(likms.assembly.go.kr)에서 확인하세요.
+이 서비스의 데이터는 국회 공공데이터 API를 기반으로 하며 참고용입니다. 법적 판단의 근거로 사용하지 마세요. 원문은 항상 [의안정보시스템](https://likms.assembly.go.kr)에서 확인하세요.
 
 국회 의안 본문은 저작권법 제7조에 따라 저작권 보호 대상이 아닙니다.
-
----
-
-## 기여
-
-문의는 poliscope@poliscope.kr 로 이메일 부탁드립니다.
-오류가 있는 AI 요약은 각 법안 페이지의 "이 요약이 틀렸어요" 버튼으로 신고해주세요.
