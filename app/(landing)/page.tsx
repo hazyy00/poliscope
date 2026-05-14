@@ -1,11 +1,170 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+
+// ── DECO 1: 의원 프로필 — 세로 바 그리드 (출석률) ──────────────
+function Deco1() {
+  const bars = [58, 72, 81, 65, 92, 78, 88, 69, 95, 74, 83, 61]
+  const svgW = 300, svgH = 260
+  const barW = 16, gap = 8
+  const total = bars.length * (barW + gap) - gap
+  const startX = (svgW - total) / 2
+  const maxH = svgH * 0.78
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} xmlns="http://www.w3.org/2000/svg" style={{ width: 300, height: 'auto' }}>
+        {bars.map((h, i) => {
+          const bh = Math.round(h / 100 * maxH)
+          const x = startX + i * (barW + gap)
+          const alpha = (0.12 + (h / 100) * 0.55).toFixed(2)
+          return <rect key={i} x={x} y={svgH - bh - 20} width={barW} height={bh} rx={2} fill={`rgba(74,63,143,${alpha})`} />
+        })}
+        <line x1={startX} y1={svgH - 20} x2={startX + total} y2={svgH - 20} stroke="rgba(26,25,22,0.1)" strokeWidth={0.8} />
+        <text x={svgW / 2} y={svgH - 4} fontSize={9} fill="rgba(26,25,22,0.3)" textAnchor="middle" fontFamily="Noto Sans KR,sans-serif" letterSpacing="0.08em">
+          의원별 본회의 출석률
+        </text>
+      </svg>
+      <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
+        {[{ n: '300', l: '현역 의원' }, { n: '94.2%', l: '평균 출석률' }, { n: '12명', l: '출석 미달' }].map(c => (
+          <div key={c.l} style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── DECO 2: 법안 추적 — 웨이브 + 페르소나 태그 ────────────────
+function Deco2() {
+  const svgW = 300, svgH = 260
+  const waves: { pts: string; alpha: string; sw: string }[] = []
+  for (let i = 0; i < 7; i++) {
+    const pts: string[] = []
+    const baseY = 80 + i * 22
+    const amp = 14 - i
+    for (let x = 0; x <= svgW; x += 6) {
+      const y = baseY + Math.sin((x / svgW) * Math.PI * 2.5 + i * 0.7) * amp
+      pts.push(`${x},${y.toFixed(1)}`)
+    }
+    waves.push({
+      pts: pts.join(' '),
+      alpha: (0.06 + i * 0.055).toFixed(2),
+      sw: (0.8 + i * 0.25).toFixed(1),
+    })
+  }
+  const tags = [
+    { x: 30, y: 28, w: 58, t: '직장인' },
+    { x: 118, y: 18, w: 68, t: '자영업자' },
+    { x: 218, y: 28, w: 54, t: '학생' },
+  ]
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} xmlns="http://www.w3.org/2000/svg" style={{ width: 300, height: 'auto' }}>
+        {tags.map(tg => (
+          <g key={tg.t}>
+            <rect x={tg.x} y={tg.y} width={tg.w} height={20} rx={10} fill="rgba(74,63,143,0.09)" stroke="rgba(74,63,143,0.25)" strokeWidth={0.7} />
+            <text x={tg.x + tg.w / 2} y={tg.y + 13.5} fontSize={9} fill="rgba(74,63,143,0.75)" textAnchor="middle" fontFamily="Noto Sans KR,sans-serif">{tg.t}</text>
+          </g>
+        ))}
+        {waves.map((w, i) => (
+          <polyline key={i} points={w.pts} fill="none" stroke={`rgba(74,63,143,${w.alpha})`} strokeWidth={w.sw} />
+        ))}
+      </svg>
+      <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
+        {[{ n: '17,241', l: '발의 법안' }, { n: '3종', l: '페르소나 해석' }, { n: 'AI', l: '자동 요약' }].map(c => (
+          <div key={c.l} style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── DECO 3: 표결 기록 — 도트 그리드 ──────────────────────────
+function Deco3() {
+  const cols = 10, rows = 8, dotR = 2.5, gapX = 18, gapY = 18
+  const svgW = cols * gapX, svgH = rows * gapY
+  const dots: { cx: number; cy: number; alpha: string }[] = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cx = c * gapX + gapX / 2
+      const cy = r * gapY + gapY / 2
+      const distFromCenter = Math.sqrt(Math.pow(c - (cols / 2 - 0.5), 2) + Math.pow(r - (rows / 2 - 0.5), 2))
+      const alpha = Math.max(0.07, 0.52 - distFromCenter * 0.045).toFixed(2)
+      dots.push({ cx, cy, alpha })
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} xmlns="http://www.w3.org/2000/svg" style={{ width: 180, height: 'auto' }}>
+        {dots.map((d, i) => (
+          <circle key={i} cx={d.cx.toFixed(1)} cy={d.cy.toFixed(1)} r={dotR} fill={`rgba(74,63,143,${d.alpha})`} />
+        ))}
+      </svg>
+      <div style={{ display: 'flex', gap: 28, marginTop: 4 }}>
+        {[{ n: '4,812', l: '표결 기록' }, { n: '68%', l: '평균 가결률' }, { n: '14건', l: '이번 주 표결' }].map(c => (
+          <div key={c.l} style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+
+const SNAP_PANELS = [
+  {
+    id: 'p1',
+    num: '01 / 03',
+    title: <>의원 <em>프로필</em></>,
+    desc: '300명 의원의 발의·표결·출석·재산·경력을 한 페이지에. 정당 이탈 표시, 위원회별 활동, 역대 대수 비교. 숫자로 보는 의원, 말이 아닌 기록으로.',
+    tags: ['발의 법안 추적', '표결 이탈 감지', '출석률 시각화'],
+    bg: 'var(--iv)',
+    rightBg: 'var(--ivd)',
+    deco: <Deco1 />,
+  },
+  {
+    id: 'p2',
+    num: '02 / 03',
+    title: <>법안을<br /><em>내 삶의 언어</em>로</>,
+    desc: '17,241건 발의 법안 전수 수록. AI가 법조문을 직장인·자영업자·학생 언어로 풀어냄. 이 법이 나한테 어떤 영향을 주는가를 먼저 답합니다.',
+    tags: ['AI 요약', '페르소나 해석', '원문 링크'],
+    bg: 'var(--ivd)',
+    rightBg: 'var(--iv)',
+    deco: <Deco2 />,
+  },
+  {
+    id: 'p3',
+    num: '03 / 03',
+    title: <>표결,<br /><em>있는 그대로</em></>,
+    desc: '4,812건 표결 전수 공개. 찬반 비율, 정당별 투표 내역, 접전 표결 하이라이트. 편집 없이, 원문 그대로.',
+    tags: ['찬반 시각화', '정당별 비교', '접전 표결 강조'],
+    bg: 'var(--iv)',
+    rightBg: 'var(--ivd)',
+    deco: <Deco3 />,
+  },
+]
+
+const SECTIONS = ['hero', 'p1', 'p2', 'p3']
 
 export default function LandingPage() {
   const [loaderOut, setLoaderOut] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [navVisible, setNavVisible] = useState(false)
+  const [activeSection, setActiveSection] = useState(0)
+  const [dotsVisible, setDotsVisible] = useState(false)
+  const swRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const l1 = document.getElementById('l1')
@@ -15,15 +174,12 @@ export default function LandingPage() {
     const lf = document.getElementById('lf')
     const ln = document.getElementById('ln')
 
-    // 목업과 동일한 타이밍
     setTimeout(() => l1?.classList.add('s'), 180)
     setTimeout(() => l2?.classList.add('s'), 650)
     setTimeout(() => l3?.classList.add('s'), 1100)
     setTimeout(() => {
       lb?.classList.add('s')
-      // CSS transition으로 0→100% (2.3s)
       if (lf) lf.style.width = '100%'
-      // 숫자 카운터: 0→100, 64ms마다 3씩
       let n = 0
       const iv = setInterval(() => {
         n = Math.min(n + 3, 100)
@@ -34,206 +190,333 @@ export default function LandingPage() {
 
     setTimeout(() => {
       setLoaderOut(true)
-      setTimeout(() => setLoaded(true), 700)
+      setTimeout(() => {
+        setLoaded(true)
+        setNavVisible(true)
+        setTimeout(() => setDotsVisible(true), 600)
+      }, 700)
     }, 3500)
   }, [])
+
+  useEffect(() => {
+    if (!loaded) return
+    const sw = swRef.current
+    if (!sw) return
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const idx = SECTIONS.indexOf(e.target.id)
+            if (idx >= 0) setActiveSection(idx)
+          }
+        })
+      },
+      { root: sw, threshold: 0.5 }
+    )
+
+    SECTIONS.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el) obs.observe(el)
+    })
+
+    return () => obs.disconnect()
+  }, [loaded])
+
+  function scrollToSection(idx: number) {
+    const el = document.getElementById(SECTIONS[idx])
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     <>
       <style>{`
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+        @keyframes blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.35;transform:scale(.65);} }
         @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         .li { transform:translateY(110%); opacity:0; transition:transform .7s cubic-bezier(.16,1,.3,1), opacity .6s; }
         .li.s { transform:translateY(0); opacity:1; }
         #lb { opacity:0; transition:opacity .4s; }
         #lb.s { opacity:1; }
-        .tk-inner { animation:ticker 28s linear infinite; }
+        .tk-inner { animation:ticker 30s linear infinite; }
+        .sp-title em { font-style:italic; color:var(--pu); font-family:var(--font-fell),serif; }
+        .fcard:hover .fa-arrow { border-color:var(--pu); color:var(--pu); transform:translate(2px,-2px); }
       `}</style>
 
       {/* LOADER */}
       {!loaded && (
         <div
           style={{
-            position:'fixed', inset:0, background:'var(--bk)', zIndex:9999,
-            display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column',
-            transition:'opacity .7s, visibility .7s',
+            position: 'fixed', inset: 0, background: 'var(--bk)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+            transition: 'opacity .7s, visibility .7s',
             opacity: loaderOut ? 0 : 1,
             visibility: loaderOut ? 'hidden' : 'visible',
           }}
         >
-          <div style={{display:'flex',flexDirection:'column',gap:4,overflow:'hidden'}}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
             {[
-              { id:'l1', text:'PoliScope.',              color:'var(--iv)',  italic:false },
-              { id:'l2', text:'데이터로 보는 민주주의.', color:'var(--pul)', italic:true  },
-              { id:'l3', text:'대한민국 국회 투명성 플랫폼.', color:'var(--iv)', italic:false },
+              { id: 'l1', text: 'PoliScope.', color: 'var(--iv)', italic: false },
+              { id: 'l2', text: '데이터로 보는 민주주의.', color: 'var(--pul)', italic: true },
+              { id: 'l3', text: '대한민국 국회 투명성 플랫폼.', color: 'var(--iv)', italic: false },
             ].map(({ id, text, color, italic }) => (
               <div
-                key={id}
-                id={id}
-                className="li"
+                key={id} id={id} className="li"
                 style={{
-                  fontFamily:'var(--font-serif),serif',
-                  fontSize:'clamp(24px,4vw,48px)',
-                  fontWeight:300,
-                  color,
-                  fontStyle: italic ? 'italic' : 'normal',
-                  letterSpacing:'-.01em',
-                  lineHeight:1.25,
+                  fontFamily: 'var(--font-serif),serif',
+                  fontSize: 'clamp(24px,4vw,48px)', fontWeight: 300,
+                  color, fontStyle: italic ? 'italic' : 'normal',
+                  letterSpacing: '-.01em', lineHeight: 1.25,
                 }}
               >
                 {text}
               </div>
             ))}
           </div>
-
-          {/* 바 + 숫자 */}
-          <div
-            id="lb"
-            style={{
-              position:'absolute', bottom:80, left:'50%', transform:'translateX(-50%)',
-              display:'flex', alignItems:'center', gap:12,
-            }}
-          >
-            <div style={{width:320, height:3, background:'rgba(242,237,228,.13)', borderRadius:2, position:'relative', overflow:'hidden'}}>
-              <div
-                id="lf"
-                style={{
-                  position:'absolute', inset:0, width:0,
-                  background:'var(--pul)',
-                  borderRadius:2,
-                  transition:'width 2.3s cubic-bezier(.4,0,.2,1)',
-                }}
-              />
+          <div id="lb" style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 320, height: 3, background: 'rgba(242,237,228,.13)', borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
+              <div id="lf" style={{ position: 'absolute', inset: 0, width: 0, background: 'var(--pul)', borderRadius: 2, transition: 'width 2.3s cubic-bezier(.4,0,.2,1)' }} />
             </div>
-            <div id="ln" style={{fontSize:13, color:'rgba(242,237,228,.45)', letterSpacing:'.08em', minWidth:36, textAlign:'right'}}>0%</div>
+            <div id="ln" style={{ fontSize: 13, color: 'rgba(242,237,228,.45)', letterSpacing: '.08em', minWidth: 36, textAlign: 'right' }}>0%</div>
           </div>
         </div>
       )}
 
       {/* NAV */}
       <nav style={{
-        position:'fixed',top:0,left:0,right:0,zIndex:100,
-        display:'flex',alignItems:'center',justifyContent:'space-between',
-        padding:'0 52px',height:60,
-        borderBottom:'.5px solid var(--bd)',
-        background:'rgba(242,237,228,.9)',backdropFilter:'blur(14px)',
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 52px', height: 60,
+        borderBottom: '.5px solid var(--bd)',
+        background: 'rgba(242,237,228,.9)', backdropFilter: 'blur(14px)',
+        opacity: navVisible ? 1 : 0,
+        transform: navVisible ? 'translateY(0)' : 'translateY(-8px)',
+        transition: 'opacity .5s, transform .5s',
       }}>
-        <div style={{fontFamily:'var(--font-serif),serif',fontSize:15,display:'flex',alignItems:'center',gap:7}}>
-          <div style={{width:5,height:5,borderRadius:'50%',background:'var(--pu)'}}></div>
+        <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 15, display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pu)' }}></div>
           <div>
             <div>PoliScope</div>
-            <div style={{fontSize:10,color:'var(--t3)',letterSpacing:'.04em',marginTop:2}}>대한민국 국회 투명성 플랫폼</div>
+            <div style={{ fontSize: 10, color: 'var(--t3)', letterSpacing: '.04em', marginTop: 2 }}>대한민국 국회 투명성 플랫폼</div>
           </div>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:28}}>
-          <Link href="/members" style={{fontSize:13,color:'var(--t2)',textDecoration:'none'}}>의원</Link>
-          <Link href="/bills" style={{fontSize:13,color:'var(--t2)',textDecoration:'none'}}>법안</Link>
-          <Link href="/votes" style={{fontSize:13,color:'var(--t2)',textDecoration:'none'}}>표결</Link>
-          <Link href="/members" style={{fontSize:12,fontWeight:500,color:'var(--iv)',background:'var(--bk)',padding:'7px 16px',borderRadius:2,textDecoration:'none'}}>검색하기 →</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+          <Link href="/members" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>의원</Link>
+          <Link href="/bills" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>법안</Link>
+          <Link href="/votes" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>표결</Link>
+          <Link href="/members" style={{ fontSize: 12, fontWeight: 500, color: 'var(--iv)', background: 'var(--bk)', padding: '7px 16px', borderRadius: 2, textDecoration: 'none' }}>검색하기 →</Link>
         </div>
       </nav>
 
-      {/* MAIN */}
-      <main style={{paddingTop:60}}>
+      {/* SCROLL DOTS */}
+      <div style={{
+        position: 'fixed', right: 24, top: '50%', transform: 'translateY(-50%)',
+        display: 'flex', flexDirection: 'column', gap: 8, zIndex: 200,
+        opacity: dotsVisible ? 1 : 0, transition: 'opacity .4s',
+      }}>
+        {SECTIONS.map((_, i) => (
+          <div
+            key={i}
+            onClick={() => scrollToSection(i)}
+            style={{
+              width: 6, height: 6, borderRadius: '50%', cursor: 'pointer',
+              background: activeSection === i ? 'var(--pu)' : 'transparent',
+              border: '.5px solid var(--t3)',
+              transform: activeSection === i ? 'scale(1.4)' : 'scale(1)',
+              transition: 'background .2s, transform .2s',
+            }}
+          />
+        ))}
+      </div>
 
+      {/* SCROLL WRAPPER */}
+      <div
+        ref={swRef}
+        style={{
+          height: '100vh', overflowY: 'scroll',
+          scrollSnapType: 'y mandatory', scrollBehavior: 'smooth',
+          paddingTop: 60,
+        }}
+      >
         {/* HERO */}
-        <section style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
-          <div style={{flex:1,display:'grid',gridTemplateColumns:'0.9fr 1.4fr',alignItems:'center',padding:'0 56px',gap:40}}>
-
+        <section
+          id="hero"
+          style={{
+            height: '100vh', display: 'flex', flexDirection: 'column',
+            scrollSnapAlign: 'start', overflow: 'hidden', marginTop: -60,
+            paddingTop: 60,
+          }}
+        >
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '0.9fr 1.4fr', alignItems: 'center', minHeight: 0 }}>
             {/* LEFT */}
-            <div style={{display:'flex',flexDirection:'column',gap:20}}>
-              <div style={{display:'flex',alignItems:'center',gap:10,fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>
-                <div style={{width:5,height:5,borderRadius:'50%',background:'var(--pu)',animation:'blink 2s ease infinite'}}></div>
-                <div style={{width:28,height:1,background:'var(--pu)'}}></div>
+            <div style={{ padding: '0 40px 0 56px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pu)', animation: 'blink 2s ease infinite' }}></div>
+                <div style={{ width: 28, height: 1, background: 'var(--pu)' }}></div>
                 22대 국회 실시간 추적
               </div>
 
-              <h1 style={{fontFamily:'var(--font-serif),serif',fontSize:'clamp(30px,3.6vw,54px)',fontWeight:300,lineHeight:1.18,letterSpacing:'-.025em'}}>
-                정치를<br/>
-                <em style={{fontStyle:'italic',color:'var(--pu)',fontFamily:'var(--font-fell),serif'}}>있는 그대로</em><br/>
+              <h1 style={{ fontFamily: 'var(--font-serif),serif', fontSize: 'clamp(30px,3.6vw,54px)', fontWeight: 300, lineHeight: 1.18, letterSpacing: '-.025em' }}>
+                정치를<br />
+                <em style={{ fontStyle: 'italic', color: 'var(--pu)', fontFamily: 'var(--font-fell),serif' }}>있는 그대로</em><br />
                 볼 권리
               </h1>
 
-              <p style={{fontSize:14,fontWeight:300,lineHeight:1.8,color:'var(--t2)',maxWidth:360}}>
-                300명 의원의 발의·표결·출석을 원문 그대로.<br/>좌도 우도 아닌, 데이터만.
+              <p style={{ fontSize: 14, fontWeight: 300, lineHeight: 1.8, color: 'var(--t2)', maxWidth: 360 }}>
+                300명 의원의 발의·표결·출석을 원문 그대로.<br />좌도 우도 아닌, 데이터만.
               </p>
 
-              <div style={{display:'flex',gap:28,paddingTop:6,borderTop:'.5px solid var(--bd)'}}>
+              <div style={{ display: 'flex', gap: 28, paddingTop: 6, borderTop: '.5px solid var(--bd)' }}>
                 {[
-                  {n:'17,192', l:'발의 법안'},
-                  {n:'286',    l:'현역 의원'},
-                  {n:'1,547',  l:'표결 기록'},
+                  { n: '17,192', l: '발의 법안' },
+                  { n: '286', l: '현역 의원' },
+                  { n: '1,547', l: '표결 기록' },
                 ].map(s => (
                   <div key={s.l}>
-                    <div style={{fontFamily:'var(--font-serif),serif',fontSize:24,fontWeight:400,letterSpacing:'-.02em',lineHeight:1}}>{s.n}</div>
-                    <div style={{fontSize:11,color:'var(--t3)',marginTop:3}}>{s.l}</div>
+                    <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 24, fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1 }}>{s.n}</div>
+                    <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 3 }}>{s.l}</div>
                   </div>
                 ))}
               </div>
 
-              <div style={{display:'flex',alignItems:'center',gap:16}}>
-                <Link href="/members" style={{display:'inline-flex',alignItems:'center',gap:7,fontSize:13,fontWeight:500,color:'var(--iv)',background:'var(--bk)',padding:'11px 22px',borderRadius:2,textDecoration:'none'}}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Link href="/members" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 500, color: 'var(--iv)', background: 'var(--bk)', padding: '11px 22px', borderRadius: 2, textDecoration: 'none' }}>
                   의원 검색하기 →
                 </Link>
-                <Link href="/bills" style={{fontSize:13,color:'var(--t2)',textDecoration:'none'}}>
+                <Link href="/bills" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>
                   법안 둘러보기 →
                 </Link>
               </div>
             </div>
 
-            {/* RIGHT — placeholder until KoreaMap component */}
-            <div style={{position:'relative',height:'70vh',background:'var(--ivd)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <div style={{textAlign:'center',color:'var(--t3)'}}>
-                <div style={{fontSize:13}}>지역구 지도</div>
-                <div style={{fontSize:11,marginTop:4}}>준비 중</div>
+            {/* RIGHT — map placeholder */}
+            <div style={{ height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'linear-gradient(rgba(26,25,22,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(26,25,22,.028) 1px,transparent 1px)', backgroundSize: '50px 50px' }} />
+              <div style={{ textAlign: 'center', color: 'var(--t3)' }}>
+                <div style={{ fontSize: 13 }}>지역구 지도</div>
+                <div style={{ fontSize: 11, marginTop: 4 }}>준비 중</div>
               </div>
             </div>
           </div>
 
           {/* TICKER */}
-          <div style={{borderTop:'.5px solid var(--bd)',borderBottom:'.5px solid var(--bd)',padding:'11px 0',overflow:'hidden',background:'var(--ivd)',flexShrink:0}}>
-            <div className="tk-inner" style={{display:'flex',gap:48,whiteSpace:'nowrap',width:'max-content'}}>
+          <div style={{ borderTop: '.5px solid var(--bd)', borderBottom: '.5px solid var(--bd)', padding: '11px 0', overflow: 'hidden', background: 'var(--ivd)', flexShrink: 0 }}>
+            <div className="tk-inner" style={{ display: 'flex', whiteSpace: 'nowrap', width: 'max-content' }}>
               {Array(2).fill(null).map((_, i) => (
-                <span key={i} style={{display:'flex',gap:48}}>
-                  {['22대 국회 의원 286명 수록','법안 17,192건 실시간 추적','표결 기록 1,547건','국회 투명성 플랫폼','poliscope.kr'].map((t, j) => (
-                    <span key={j} style={{fontSize:11,letterSpacing:'.08em',color:'var(--t3)'}}>
-                      <span style={{color:'var(--pu)',marginRight:12}}>◆</span>{t}
+                <span key={i} style={{ display: 'inline-flex' }}>
+                  {['22대 국회 의원 286명 수록', '법안 17,192건 실시간 추적', '표결 기록 1,547건', '국회 투명성 플랫폼', 'poliscope.kr'].map((t, j) => (
+                    <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '0 28px', fontSize: 12, color: 'var(--t3)', flexShrink: 0 }}>
+                      <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--pu)', flexShrink: 0, display: 'inline-block' }} />
+                      {t}
                     </span>
                   ))}
                 </span>
               ))}
             </div>
           </div>
+
+          {/* FEATURE CARDS */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, background: 'rgba(26,25,22,.11)', borderTop: '.5px solid var(--bd)', flexShrink: 0 }}>
+            {[
+              { num: '01', title: '의원 프로필', desc: '300명 발의·표결·출석·재산·경력. 정당 이탈 표시, 위원회별 활동.', href: '/members' },
+              { num: '02', title: '법안 추적', desc: '17,241건 전수. AI 요약 + 페르소나별 해석. 직장인·자영업자·학생.', href: '/bills' },
+              { num: '03', title: '표결 기록', desc: '4,812건 표결 전수. 찬반 비율, 정당별 투표, 접전 표결 하이라이트.', href: '/votes' },
+            ].map(card => (
+              <Link
+                key={card.num}
+                href={card.href}
+                className="fcard"
+                style={{ background: 'var(--iv)', padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 9, textDecoration: 'none', borderRight: '.5px solid rgba(26,25,22,.11)' }}
+              >
+                <div style={{ fontFamily: 'var(--font-fell),serif', fontSize: 12, color: 'var(--pu)', letterSpacing: '.05em' }}>{card.num}</div>
+                <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 17, fontWeight: 400, color: 'var(--t1)', letterSpacing: '-.01em' }}>{card.title}</div>
+                <div style={{ fontSize: 12, fontWeight: 300, color: 'var(--t2)', lineHeight: 1.7 }}>{card.desc}</div>
+                <div
+                  className="fa-arrow"
+                  style={{
+                    marginTop: 'auto', width: 24, height: 24, borderRadius: '50%',
+                    border: '.5px solid var(--bd)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--t3)', transition: 'border-color .2s, color .2s, transform .2s',
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                    <path d="M1.5 9.5L9.5 1.5M9.5 1.5H4.5M9.5 1.5V6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+                  </svg>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
 
-        {/* FEATURE CARDS */}
-        <section style={{padding:'80px 56px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:24}}>
-          {[
-            { title:'의원 프로필', desc:'발의 법안, 표결 이력, 출석률을 한눈에', href:'/members', tag:'의원 286명' },
-            { title:'법안 검색', desc:'17,000+ 법안을 상태·위원회·발의자로 검색', href:'/bills', tag:'법안 17,192건' },
-            { title:'표결 기록', desc:'본회의 표결 결과와 정당별 찬반 현황', href:'/votes', tag:'표결 1,547건' },
-          ].map(card => (
-            <Link
-              key={card.title}
-              href={card.href}
-              style={{display:'block',padding:32,border:'.5px solid var(--bd)',borderRadius:4,textDecoration:'none',transition:'border-color .2s,transform .15s',background:'var(--iv)'}}
-            >
-              <div style={{fontSize:10,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',marginBottom:16}}>{card.tag}</div>
-              <div style={{fontFamily:'var(--font-serif),serif',fontSize:22,fontWeight:400,color:'var(--t1)',marginBottom:10}}>{card.title}</div>
-              <div style={{fontSize:13,color:'var(--t2)',lineHeight:1.7}}>{card.desc}</div>
-              <div style={{marginTop:20,fontSize:12,color:'var(--pu)'}}>바로가기 →</div>
-            </Link>
-          ))}
-        </section>
+        {/* SNAP PANELS */}
+        {SNAP_PANELS.map((panel) => (
+          <div
+            key={panel.id}
+            id={panel.id}
+            style={{
+              scrollSnapAlign: 'start', height: '100vh',
+              display: 'grid', gridTemplateColumns: '1fr 1fr',
+              alignItems: 'center', gap: 0,
+              borderTop: '.5px solid var(--bd)',
+              position: 'relative', overflow: 'hidden',
+              background: panel.bg,
+            }}
+          >
+            {/* LEFT */}
+            <div style={{ padding: '0 60px 0 80px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-fell),serif', fontSize: 12, color: 'var(--pu)', letterSpacing: '.08em', marginBottom: 18 }}>
+                {panel.num}
+              </div>
+              <div
+                className="sp-title"
+                style={{
+                  fontFamily: 'var(--font-serif),serif',
+                  fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 300,
+                  lineHeight: 1.15, letterSpacing: '-.025em', marginBottom: 20,
+                }}
+              >
+                {panel.title}
+              </div>
+              <p style={{ fontSize: 15, fontWeight: 300, color: 'var(--t2)', lineHeight: 1.8, maxWidth: 500, marginBottom: 32 }}>
+                {panel.desc}
+              </p>
+              <div style={{ display: 'flex', gap: 10, paddingTop: 18, borderTop: '.5px solid var(--bd)' }}>
+                {panel.tags.map(tag => (
+                  <div key={tag} style={{ fontSize: 12, color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pu)', flexShrink: 0, display: 'inline-block' }} />
+                    {tag}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT — deco */}
+            <div style={{
+              height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderLeft: '.5px solid var(--bd)', background: panel.rightBg,
+              position: 'relative', overflow: 'hidden',
+            }}>
+              {panel.deco}
+            </div>
+          </div>
+        ))}
 
         {/* FOOTER */}
-        <footer style={{borderTop:'.5px solid var(--bd)',padding:'32px 56px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <div style={{fontFamily:'var(--font-serif),serif',fontSize:13,color:'var(--t3)'}}>PoliScope © 2024</div>
-          <div style={{fontSize:11,color:'var(--t3)',maxWidth:400,textAlign:'right',lineHeight:1.6}}>
-            이 서비스의 데이터는 국회 공공데이터 API 기반이며 참고용입니다.<br/>법적 판단의 근거로 사용하지 마세요.
+        <footer style={{
+          scrollSnapAlign: 'start',
+          padding: '22px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderTop: '.5px solid var(--bd)',
+        }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 13, color: 'var(--t2)' }}>PoliScope</div>
+            <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 2 }}>대한민국 국회 투명성 플랫폼</div>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--t3)' }}>국회 공공데이터 API 기반 · 원문 출처 제공 · 정치적 중립</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--pu)' }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--pu)', animation: 'blink 2s ease infinite' }} />
+            실시간 업데이트 중
           </div>
         </footer>
-      </main>
+      </div>
     </>
   )
 }
