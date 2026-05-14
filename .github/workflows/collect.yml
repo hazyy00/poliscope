@@ -1,0 +1,43 @@
+name: Daily Data Collection
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 매일 새벽 3시 KST (UTC+9 → UTC 18:00)
+  workflow_dispatch:       # 수동 실행 가능
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install httpx aiohttp pandas python-dotenv supabase pydantic loguru tqdm
+
+      - name: Create .env.local
+        run: |
+          cat > .env.local << EOF
+          ASSEMBLY_API_KEY=${{ secrets.ASSEMBLY_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EOF
+
+      - name: Collect members
+        run: python3 scripts/collect_members.py
+
+      - name: Collect bills (incremental)
+        run: python3 scripts/collect_bills.py --since $(date -d 'yesterday' '+%Y-%m-%d')
+
+      - name: Collect votes (incremental)
+        run: python3 scripts/collect_votes.py --since $(date -d 'yesterday' '+%Y-%m-%d')
+
+      - name: Validate data
+        run: python3 scripts/validate_data.py
