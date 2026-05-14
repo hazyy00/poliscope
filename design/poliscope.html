@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoliScope — 대한민국 국회 투명성 플랫폼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --iv: #F2EDE4; --ivd: #E8E1D5;
+  --bk: #0F0F0D; --pu: #4A3F8F; --pul: #6B5FBB;
+  --t1: #1A1916; --t2: #5A554A; --t3: #8A8478;
+  --bd: rgba(26,25,22,.11);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--iv); color:var(--t1); font-family:'Noto Sans KR',sans-serif; overflow-x:hidden; }
+
+/* ── LOADER ── */
+#ld { position:fixed; inset:0; background:var(--bk); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition:opacity .7s,visibility .7s; }
+#ld.out { opacity:0; visibility:hidden; pointer-events:none; }
+.ll { display:flex; flex-direction:column; gap:4px; overflow:hidden; }
+.li { font-family:'Noto Serif KR',serif; font-size:clamp(24px,4vw,48px); font-weight:300; color:var(--iv); letter-spacing:-.01em; line-height:1.25; transform:translateY(110%); opacity:0; transition:transform .7s cubic-bezier(.16,1,.3,1), opacity .6s; }
+.li.em { font-style:italic; color:var(--pul); }
+.li.s { transform:translateY(0); opacity:1; }
+.lb { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:12px; opacity:0; transition:opacity .4s; }
+.lb.s { opacity:1; }
+.lp { width:110px; height:1px; background:rgba(242,237,228,.13); position:relative; overflow:hidden; }
+.lf { position:absolute; inset:0; width:0; background:var(--pul); transition:width 2.3s cubic-bezier(.4,0,.2,1); }
+.ln { font-size:11px; color:rgba(242,237,228,.32); letter-spacing:.05em; min-width:30px; text-align:right; }
+
+/* ── NAV ── */
+nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 52px; height:60px; border-bottom:.5px solid var(--bd); background:rgba(242,237,228,.9); backdrop-filter:blur(14px); opacity:0; transform:translateY(-8px); transition:opacity .5s, transform .5s; }
+nav.s { opacity:1; transform:translateY(0); }
+.nlo { font-family:'Noto Serif KR',serif; font-size:15px; display:flex; align-items:center; gap:7px; }
+.nlo-sub { font-size:10px; color:var(--t3); letter-spacing:.04em; margin-top:2px; }
+.nd { width:5px; height:5px; border-radius:50%; background:var(--pu); }
+.nl { display:flex; align-items:center; gap:28px; }
+.nl a { font-size:13px; color:var(--t2); text-decoration:none; transition:color .2s; }
+.nl a:hover { color:var(--t1); }
+.nc { font-size:12px; font-weight:500; color:var(--iv)!important; background:var(--bk); padding:7px 16px; border-radius:2px; transition:background .2s!important; }
+.nc:hover { background:var(--pu)!important; }
+
+/* ── SCROLL WRAP ── */
+#sw { height:100vh; overflow-y:scroll; scroll-snap-type:y mandatory; scroll-behavior:smooth; }
+
+/* ── HERO ── */
+#hero { height:100vh; display:flex; flex-direction:column; padding-top:60px; scroll-snap-align:start; overflow:hidden; }
+.htop { flex:1; display:grid; grid-template-columns:0.9fr 1.4fr; align-items:center; min-height:0; }
+.hl { padding:0 40px 0 56px; display:flex; flex-direction:column; gap:20px; opacity:0; transform:translateY(20px); transition:opacity .7s ease .3s, transform .7s ease .3s; }
+.hl.s { opacity:1; transform:translateY(0); }
+.ey { display:flex; align-items:center; gap:10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); }
+.eyd { width:5px; height:5px; border-radius:50%; background:var(--pu); animation:blink 2s ease infinite; }
+.eyl { width:28px; height:1px; background:var(--pu); }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.65);} }
+h1 { font-family:'Noto Serif KR',serif; font-size:clamp(30px,3.6vw,54px); font-weight:300; line-height:1.18; letter-spacing:-.025em; }
+h1 em { font-style:italic; color:var(--pu); font-family:'IM Fell English',serif; }
+.sub { font-size:14px; font-weight:300; line-height:1.8; color:var(--t2); max-width:360px; }
+.sts { display:flex; gap:28px; padding-top:6px; border-top:.5px solid var(--bd); }
+.sn { font-family:'Noto Serif KR',serif; font-size:24px; font-weight:400; letter-spacing:-.02em; line-height:1; }
+.sl { font-size:11px; color:var(--t3); margin-top:3px; }
+.ac { display:flex; align-items:center; gap:14px; }
+.b1 { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:500; color:var(--iv); background:var(--bk); padding:11px 22px; border-radius:2px; text-decoration:none; transition:background .2s, transform .15s; }
+.b1:hover { background:var(--pu); transform:translateY(-1px); }
+.b2 { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--t2); text-decoration:none; transition:color .2s; }
+.b2:hover { color:var(--t1); }
+
+/* ── MAP ── */
+.hr { height:100%; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; opacity:0; transition:opacity .8s ease .5s; }
+.hr.s { opacity:1; }
+.hg { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(26,25,22,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(26,25,22,.028) 1px,transparent 1px); background-size:50px 50px; }
+.mw { width:580px; flex-shrink:0; animation:mf 14s ease-in-out infinite; }
+@keyframes mf { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+.mw svg { display:block; width:100%; height:auto; overflow:visible; }
+
+/* ── REGION INTERACTION ── */
+.rg { transition:transform .28s cubic-bezier(.34,1.4,.64,1), filter .2s ease; cursor:pointer; }
+.dl { display:none; }
+.rg.hov .dl, .rg.sel .dl { display:block; }
+
+/* ── TICKER ── */
+.tk { border-top:.5px solid var(--bd); border-bottom:.5px solid var(--bd); padding:11px 0; overflow:hidden; background:var(--ivd); flex-shrink:0; opacity:0; transition:opacity .5s ease .8s; }
+.tk.s { opacity:1; }
+.tt { display:flex; white-space:nowrap; animation:tc 30s linear infinite; }
+@keyframes tc { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+.ti { display:inline-flex; align-items:center; gap:9px; padding:0 28px; font-size:12px; color:var(--t3); flex-shrink:0; }
+.ts { width:3px; height:3px; border-radius:50%; background:var(--pu); flex-shrink:0; }
+.th { color:var(--t2); font-weight:500; }
+
+/* ── FEATURE CARDS ── */
+#fc { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--bd); border-top:.5px solid var(--bd); flex-shrink:0; }
+.fcard { background:var(--iv); padding:18px 24px; display:flex; flex-direction:column; gap:9px; }
+.fn { font-family:'IM Fell English',serif; font-size:12px; color:var(--pu); letter-spacing:.05em; }
+.ft { font-family:'Noto Serif KR',serif; font-size:17px; font-weight:400; color:var(--t1); letter-spacing:-.01em; }
+.fd { font-size:12px; font-weight:300; color:var(--t2); line-height:1.7; }
+.fa { margin-top:auto; width:24px; height:24px; border-radius:50%; border:.5px solid var(--bd); display:flex; align-items:center; justify-content:center; color:var(--t3); transition:border-color .2s, color .2s, transform .2s; }
+.fcard:hover .fa { border-color:var(--pu); color:var(--pu); transform:translate(2px,-2px); }
+
+/* ── SNAP PANELS ── */
+.sp { scroll-snap-align:start; height:100vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:0; border-top:.5px solid var(--bd); position:relative; overflow:hidden; }
+.sp-left { padding:0 60px 0 80px; display:flex; flex-direction:column; justify-content:center; }
+.sp-right { height:100vh; display:flex; align-items:center; justify-content:center; border-left:.5px solid var(--bd); background:var(--ivd); position:relative; overflow:hidden; }
+.sp1 .sp-right { background:var(--ivd); }
+.sp2 .sp-right { background:var(--iv); }
+.sp3 .sp-right { background:var(--ivd); }
+.sp-num { font-family:'IM Fell English',serif; font-size:12px; color:var(--pu); letter-spacing:.08em; margin-bottom:18px; }
+.sp-title { font-family:'Noto Serif KR',serif; font-size:clamp(34px,4.2vw,58px); font-weight:300; line-height:1.15; letter-spacing:-.025em; margin-bottom:20px; }
+.sp-title em { font-style:italic; color:var(--pu); font-family:'IM Fell English',serif; }
+.sp-desc { font-size:15px; font-weight:300; color:var(--t2); line-height:1.8; max-width:500px; margin-bottom:32px; }
+.sp-tags { display:flex; gap:10px; padding-top:18px; border-top:.5px solid var(--bd); }
+.sp-tag { font-size:12px; color:var(--t3); display:flex; align-items:center; gap:7px; }
+.sp-tag::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--pu); flex-shrink:0; }
+.sp-deco { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.sp-deco svg { max-width:320px; max-height:320px; }
+.sp1 { background:var(--iv); }
+.sp2 { background:var(--ivd); }
+.sp3 { background:var(--iv); }
+
+/* ── LEGEND ── */
+.legend { position:absolute; bottom:16px; left:16px; display:flex; flex-direction:column; gap:5px; z-index:5; }
+.li2 { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--t2); }
+.ld2 { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ── TOOLTIP ── */
+#tip { position:fixed; background:rgba(10,10,8,.95); border:.5px solid rgba(255,255,255,.14); border-radius:6px; padding:11px 15px; pointer-events:none; z-index:500; display:none; min-width:155px; }
+.tr { font-size:13px; font-weight:500; color:#F2EDE4; margin-bottom:5px; }
+.tp { font-size:11px; display:flex; align-items:center; gap:5px; margin-bottom:3px; }
+.tpd { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.ts2 { font-size:11px; color:rgba(242,237,228,.5); }
+.th2 { font-size:10px; color:rgba(242,237,228,.28); margin-top:7px; padding-top:7px; border-top:.5px solid rgba(255,255,255,.07); }
+
+/* ── SCROLL DOTS ── */
+#dots { position:fixed; right:24px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:8px; z-index:200; opacity:0; transition:opacity .4s; }
+#dots.s { opacity:1; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--bd); border:.5px solid var(--t3); cursor:pointer; transition:background .2s, transform .2s; }
+.dot.on { background:var(--pu); transform:scale(1.4); }
+
+/* ── FOOTER ── */
+footer { padding:22px 56px; display:flex; align-items:center; justify-content:space-between; border-top:.5px solid var(--bd); scroll-snap-align:start; }
+.flo { font-family:'Noto Serif KR',serif; font-size:13px; color:var(--t2); }
+.fno { font-size:11px; color:var(--t3); }
+.fbg { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--pu); }
+.fbd { width:4px; height:4px; border-radius:50%; background:var(--pu); animation:blink 2s ease infinite; }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="ld">
+  <div class="ll">
+    <div class="li" id="l1">PoliScope.</div>
+    <div class="li em" id="l2">데이터로 보는 민주주의.</div>
+    <div class="li" id="l3">대한민국 국회 투명성 플랫폼.</div>
+  </div>
+  <div class="lb" id="lb"><div class="lp"><div class="lf" id="lf"></div></div><div class="ln" id="ln">0%</div></div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nlo">
+    <div class="nd"></div>
+    <div><div>PoliScope</div><div class="nlo-sub">대한민국 국회 투명성 플랫폼</div></div>
+  </div>
+  <div class="nl">
+    <a href="#">의원</a><a href="#">법안</a><a href="#">표결</a><a href="#">지도</a>
+    <a href="#" class="nc">검색하기 →</a>
+  </div>
+</nav>
+
+<!-- SCROLL WRAP -->
+<div id="sw">
+
+<!-- HERO -->
+<section id="hero">
+  <div class="htop">
+    <div class="hl" id="hl">
+      <div class="ey"><div class="eyd"></div><div class="eyl"></div>22대 국회 실시간 추적</div>
+      <h1>정치를<br><em>있는 그대로</em><br>볼 권리</h1>
+      <p class="sub">300명 의원의 발의·표결·출석을 원문 그대로.<br>좌도 우도 아닌, 데이터만.</p>
+      <div class="sts">
+        <div><div class="sn">17,241</div><div class="sl">발의 법안</div></div>
+        <div><div class="sn">300</div><div class="sl">현역 의원</div></div>
+        <div><div class="sn">4,812</div><div class="sl">표결 기록</div></div>
+      </div>
+      <div class="ac">
+        <a href="#" class="b1">의원 검색하기 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5h10M8 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a href="#" class="b2">법안 둘러보기 <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 5.5h9M6.5 2L9.5 5.5 6.5 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="hr" id="hr">
+      <div class="hg"></div>
+      <div class="mw">
+        <svg viewBox="30 10 450 580" xmlns="http://www.w3.org/2000/svg" id="kmap">
+<g class="rg" data-name="서울특별시" data-short="서울" data-party="더불어민주당" data-seats="18석" data-rate="18/48" data-color="#3D6DB5" data-cx="161.0" data-cy="118.9">
+<path d="M163.8,105.3 L168.6,106.4 L168.9,120.0 L173.8,117.8 L174.3,121.6 L171.7,129.1 L166.6,133.8 L162.6,129.7 L156.0,133.3 L153.9,126.9 L150.3,129.0 L150.8,122.0 L147.0,120.5 L149.5,115.3 L152.8,118.8 L155.8,116.9 L156.2,110.6 L161.3,112.0 L163.8,105.3 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="163.6" y="120.0" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">서울</text>
+<path d="M163.8,105.3 L168.6,106.4 L168.9,120.0 L173.8,117.8 L174.3,121.6 L171.7,129.1 L166.6,133.8 L162.6,129.7 L156.0,133.3 L153.9,126.9 L150.3,129.0 L150.8,122.0 L147.0,120.5 L149.5,115.3 L152.8,118.8 L155.8,116.9 L156.2,110.6 L161.3,112.0 L163.8,105.3 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="인천광역시" data-short="인천" data-party="더불어민주당" data-seats="11석" data-rate="11/13" data-color="#3D6DB5" data-cx="135.1" data-cy="130.5">
+<path d="M104.4,150.3 L107.1,156.4 L102.9,155.6 L104.4,150.3 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M128.7,153.2 L125.4,154.4 L127.9,148.6 L128.7,153.2 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M130.0,123.1 L135.2,127.5 L126.1,134.7 L121.0,132.4 L120.7,129.1 L128.3,126.4 L130.0,123.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M140.0,111.8 L148.9,117.7 L145.6,125.4 L148.1,131.2 L144.3,138.7 L135.1,143.4 L139.9,141.5 L136.2,135.2 L138.8,134.8 L135.8,130.3 L137.9,130.8 L136.0,129.4 L139.0,126.6 L136.6,126.5 L134.7,117.0 L140.0,111.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M78.5,107.5 L76.9,110.2 L78.5,107.5 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M118.8,100.4 L118.0,103.7 L122.0,107.1 L119.7,111.1 L114.9,104.2 L118.8,100.4 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M17.6,97.0 L14.8,98.9 L17.6,97.0 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M114.7,93.1 L118.9,95.9 L112.4,99.9 L110.7,97.6 L114.7,93.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M125.9,92.1 L131.6,100.3 L131.0,117.9 L121.4,114.4 L124.1,110.2 L120.2,103.6 L120.1,95.8 L125.9,92.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M14.0,92.0 L11.7,94.7 L10.6,92.4 L13.2,89.5 L14.0,92.0 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M12.2,75.7 L16.0,77.9 L12.4,82.5 L8.9,81.5 L7.1,76.8 L12.2,75.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="133.1" y="132.6" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">인천</text>
+<path d="M104.4,150.3 L107.1,156.4 L102.9,155.6 L104.4,150.3 Z M128.7,153.2 L125.4,154.4 L127.9,148.6 L128.7,153.2 Z M130.0,123.1 L135.2,127.5 L126.1,134.7 L121.0,132.4 L120.7,129.1 L128.3,126.4 L130.0,123.1 Z M140.0,111.8 L148.9,117.7 L145.6,125.4 L148.1,131.2 L144.3,138.7 L135.1,143.4 L139.9,141.5 L136.2,135.2 L138.8,134.8 L135.8,130.3 L137.9,130.8 L136.0,129.4 L139.0,126.6 L136.6,126.5 L134.7,117.0 L140.0,111.8 Z M78.5,107.5 L76.9,110.2 L78.5,107.5 Z M118.8,100.4 L118.0,103.7 L122.0,107.1 L119.7,111.1 L114.9,104.2 L118.8,100.4 Z M17.6,97.0 L14.8,98.9 L17.6,97.0 Z M114.7,93.1 L118.9,95.9 L112.4,99.9 L110.7,97.6 L114.7,93.1 Z M125.9,92.1 L131.6,100.3 L131.0,117.9 L121.4,114.4 L124.1,110.2 L120.2,103.6 L120.1,95.8 L125.9,92.1 Z M14.0,92.0 L11.7,94.7 L10.6,92.4 L13.2,89.5 L14.0,92.0 Z M12.2,75.7 L16.0,77.9 L12.4,82.5 L8.9,81.5 L7.1,76.8 L12.2,75.7 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+<rect x="100" y="105" width="55" height="55" fill="transparent" pointer-events="all"/>
+</g>
+<g class="rg" data-name="경기도" data-short="경기" data-party="더불어민주당" data-seats="51석" data-rate="51/60" data-color="#3D6DB5" data-cx="168.8" data-cy="149.5">
+<path d="M145.6,174.9 L140.3,164.4 L142.6,163.0 L139.6,162.7 L138.5,148.7 L140.4,148.3 L138.3,148.7 L148.2,154.8 L149.7,148.0 L151.8,149.8 L141.0,144.3 L137.6,145.8 L134.9,148.1 L139.1,150.2 L139.8,157.9 L135.8,154.3 L137.4,156.9 L134.8,155.7 L133.9,158.6 L132.0,148.5 L133.9,149.8 L142.2,143.7 L145.7,137.0 L148.8,137.6 L146.0,136.5 L147.2,120.6 L150.8,122.0 L150.3,129.0 L153.9,126.9 L156.0,133.3 L162.6,129.7 L166.6,133.8 L172.6,127.5 L174.2,119.9 L173.7,117.8 L168.9,120.0 L168.6,106.4 L164.1,105.1 L160.7,112.5 L159.0,109.6 L156.2,110.6 L155.8,116.9 L152.8,118.8 L149.5,115.3 L146.2,117.9 L140.1,111.8 L137.9,115.6 L133.8,115.7 L131.0,97.2 L136.0,98.8 L140.4,96.8 L141.0,78.4 L150.9,72.8 L153.3,62.4 L160.2,59.2 L161.1,49.8 L169.1,44.1 L176.5,59.0 L180.8,54.4 L180.2,60.6 L183.2,63.7 L190.3,61.5 L192.0,71.9 L201.5,78.4 L201.7,86.7 L196.4,91.6 L197.7,98.9 L195.3,103.2 L198.8,102.9 L197.1,111.1 L198.7,112.8 L201.9,110.5 L217.3,121.7 L211.7,126.0 L214.5,133.8 L207.5,164.2 L203.1,162.6 L201.6,171.7 L198.5,174.6 L192.7,173.3 L186.7,184.4 L181.5,186.2 L181.2,190.1 L171.9,182.0 L156.5,189.3 L148.6,179.5 L148.7,175.8 L145.6,174.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="165.6" y="160.0" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">경기</text>
+<path d="M145.6,174.9 L140.3,164.4 L142.6,163.0 L139.6,162.7 L138.5,148.7 L140.4,148.3 L138.3,148.7 L148.2,154.8 L149.7,148.0 L151.8,149.8 L141.0,144.3 L137.6,145.8 L134.9,148.1 L139.1,150.2 L139.8,157.9 L135.8,154.3 L137.4,156.9 L134.8,155.7 L133.9,158.6 L132.0,148.5 L133.9,149.8 L142.2,143.7 L145.7,137.0 L148.8,137.6 L146.0,136.5 L147.2,120.6 L150.8,122.0 L150.3,129.0 L153.9,126.9 L156.0,133.3 L162.6,129.7 L166.6,133.8 L172.6,127.5 L174.2,119.9 L173.7,117.8 L168.9,120.0 L168.6,106.4 L164.1,105.1 L160.7,112.5 L159.0,109.6 L156.2,110.6 L155.8,116.9 L152.8,118.8 L149.5,115.3 L146.2,117.9 L140.1,111.8 L137.9,115.6 L133.8,115.7 L131.0,97.2 L136.0,98.8 L140.4,96.8 L141.0,78.4 L150.9,72.8 L153.3,62.4 L160.2,59.2 L161.1,49.8 L169.1,44.1 L176.5,59.0 L180.8,54.4 L180.2,60.6 L183.2,63.7 L190.3,61.5 L192.0,71.9 L201.5,78.4 L201.7,86.7 L196.4,91.6 L197.7,98.9 L195.3,103.2 L198.8,102.9 L197.1,111.1 L198.7,112.8 L201.9,110.5 L217.3,121.7 L211.7,126.0 L214.5,133.8 L207.5,164.2 L203.1,162.6 L201.6,171.7 L198.5,174.6 L192.7,173.3 L186.7,184.4 L181.5,186.2 L181.2,190.1 L171.9,182.0 L156.5,189.3 L148.6,179.5 L148.7,175.8 L145.6,174.9 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="강원도" data-short="강원" data-party="국민의힘" data-seats="7석" data-rate="7/8" data-color="#C0392B" data-cx="240.3" data-cy="126.3">
+<path d="M274.4,71.2 L295.9,108.1 L300.3,127.4 L304.4,130.9 L315.4,154.1 L315.8,163.6 L309.8,166.7 L307.7,174.9 L298.4,168.4 L296.1,172.1 L287.1,169.3 L285.5,174.3 L277.9,169.2 L276.2,176.0 L267.7,169.7 L262.1,169.5 L259.5,165.7 L254.7,168.1 L252.2,162.3 L246.5,164.8 L244.4,162.1 L248.8,156.4 L244.7,157.1 L240.5,152.7 L238.0,156.5 L235.4,154.3 L229.9,159.1 L228.5,153.1 L225.3,152.0 L222.2,155.2 L222.5,161.5 L213.6,163.9 L210.7,157.1 L214.5,133.8 L211.7,126.0 L217.4,120.8 L213.9,117.3 L208.3,117.2 L201.7,110.4 L197.9,112.3 L198.7,102.3 L195.2,102.7 L197.7,98.9 L196.6,90.9 L201.7,86.7 L202.1,79.9 L197.7,77.1 L197.4,73.6 L192.0,71.9 L190.3,61.5 L183.2,63.7 L180.2,60.6 L180.8,54.4 L176.5,59.0 L168.6,43.8 L178.1,38.6 L181.9,40.7 L187.1,38.2 L194.6,42.2 L199.8,38.3 L206.8,39.6 L213.1,36.9 L215.7,41.7 L222.5,41.1 L227.4,44.7 L228.5,40.6 L236.2,38.6 L245.7,27.8 L247.4,11.1 L250.5,9.1 L266.4,51.1 L266.9,58.3 L274.4,71.2 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="250.0" y="124.2" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">강원</text>
+<path d="M274.4,71.2 L295.9,108.1 L300.3,127.4 L304.4,130.9 L315.4,154.1 L315.8,163.6 L309.8,166.7 L307.7,174.9 L298.4,168.4 L296.1,172.1 L287.1,169.3 L285.5,174.3 L277.9,169.2 L276.2,176.0 L267.7,169.7 L262.1,169.5 L259.5,165.7 L254.7,168.1 L252.2,162.3 L246.5,164.8 L244.4,162.1 L248.8,156.4 L244.7,157.1 L240.5,152.7 L238.0,156.5 L235.4,154.3 L229.9,159.1 L228.5,153.1 L225.3,152.0 L222.2,155.2 L222.5,161.5 L213.6,163.9 L210.7,157.1 L214.5,133.8 L211.7,126.0 L217.4,120.8 L213.9,117.3 L208.3,117.2 L201.7,110.4 L197.9,112.3 L198.7,102.3 L195.2,102.7 L197.7,98.9 L196.6,90.9 L201.7,86.7 L202.1,79.9 L197.7,77.1 L197.4,73.6 L192.0,71.9 L190.3,61.5 L183.2,63.7 L180.2,60.6 L180.8,54.4 L176.5,59.0 L168.6,43.8 L178.1,38.6 L181.9,40.7 L187.1,38.2 L194.6,42.2 L199.8,38.3 L206.8,39.6 L213.1,36.9 L215.7,41.7 L222.5,41.1 L227.4,44.7 L228.5,40.6 L236.2,38.6 L245.7,27.8 L247.4,11.1 L250.5,9.1 L266.4,51.1 L266.9,58.3 L274.4,71.2 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="충청북도" data-short="충북" data-party="국민의힘" data-seats="4석" data-rate="4/8" data-color="#C0392B" data-cx="214.3" data-cy="197.9">
+<path d="M182.5,208.0 L185.6,204.1 L189.6,204.0 L182.3,193.7 L181.5,186.2 L186.7,184.4 L192.7,173.3 L198.5,174.6 L201.6,171.7 L203.1,162.6 L207.1,164.7 L210.7,156.3 L213.6,163.9 L220.7,163.2 L225.3,152.0 L228.5,153.1 L229.9,159.1 L235.4,154.3 L238.0,156.5 L240.5,152.7 L244.7,157.1 L248.8,156.4 L244.4,162.1 L246.5,164.8 L252.2,162.3 L254.7,168.1 L259.5,165.7 L262.1,169.5 L269.6,172.1 L256.0,186.6 L254.6,198.8 L248.1,198.4 L243.0,192.4 L241.2,198.8 L235.9,196.5 L233.1,200.4 L231.1,198.2 L229.4,205.5 L231.9,209.6 L224.6,206.6 L222.7,211.5 L219.1,212.4 L222.9,214.3 L222.4,220.8 L219.2,215.1 L218.1,219.6 L214.1,221.0 L221.2,230.8 L217.6,255.2 L221.1,252.5 L224.7,257.7 L229.0,256.0 L231.0,263.0 L225.8,263.4 L224.8,276.6 L219.3,281.8 L217.4,280.0 L211.9,282.9 L207.1,277.6 L205.2,280.2 L200.6,270.1 L201.2,261.3 L197.2,257.8 L194.3,259.2 L194.8,248.5 L198.7,242.3 L196.4,239.6 L194.9,241.2 L193.8,234.0 L191.7,236.9 L188.4,236.2 L188.7,227.7 L181.8,222.5 L180.2,216.9 L182.5,208.0 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="217.5" y="202.1" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">충북</text>
+<path d="M182.5,208.0 L185.6,204.1 L189.6,204.0 L182.3,193.7 L181.5,186.2 L186.7,184.4 L192.7,173.3 L198.5,174.6 L201.6,171.7 L203.1,162.6 L207.1,164.7 L210.7,156.3 L213.6,163.9 L220.7,163.2 L225.3,152.0 L228.5,153.1 L229.9,159.1 L235.4,154.3 L238.0,156.5 L240.5,152.7 L244.7,157.1 L248.8,156.4 L244.4,162.1 L246.5,164.8 L252.2,162.3 L254.7,168.1 L259.5,165.7 L262.1,169.5 L269.6,172.1 L256.0,186.6 L254.6,198.8 L248.1,198.4 L243.0,192.4 L241.2,198.8 L235.9,196.5 L233.1,200.4 L231.1,198.2 L229.4,205.5 L231.9,209.6 L224.6,206.6 L222.7,211.5 L219.1,212.4 L222.9,214.3 L222.4,220.8 L219.2,215.1 L218.1,219.6 L214.1,221.0 L221.2,230.8 L217.6,255.2 L221.1,252.5 L224.7,257.7 L229.0,256.0 L231.0,263.0 L225.8,263.4 L224.8,276.6 L219.3,281.8 L217.4,280.0 L211.9,282.9 L207.1,277.6 L205.2,280.2 L200.6,270.1 L201.2,261.3 L197.2,257.8 L194.3,259.2 L194.8,248.5 L198.7,242.3 L196.4,239.6 L194.9,241.2 L193.8,234.0 L191.7,236.9 L188.4,236.2 L188.7,227.7 L181.8,222.5 L180.2,216.9 L182.5,208.0 Z M188.5,235.2 L189.1,238.8 L193.0,236.4 L193.1,242.9 L194.6,241.4 L196.4,243.3 L192.6,247.4 L193.4,257.2 L190.8,261.2 L186.8,253.6 L184.7,262.5 L180.5,252.1 L182.8,241.8 L188.5,235.2 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="evenodd"/>
+</g>
+<g class="rg" data-name="충청남도" data-short="충남" data-party="더불어민주당" data-seats="5석" data-rate="5/11" data-color="#3D6DB5" data-cx="139.6" data-cy="226.3">
+<path d="M121.7,221.4 L125.2,242.2 L118.8,237.7 L117.6,222.6 L120.7,219.7 L121.7,221.4 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M142.5,178.9 L148.3,181.7 L153.4,191.6 L172.7,182.1 L188.4,200.1 L189.6,204.5 L184.1,205.0 L180.9,211.5 L173.3,207.0 L170.6,209.6 L172.8,211.3 L172.4,220.3 L175.8,223.2 L173.4,230.7 L175.3,238.0 L180.7,240.5 L178.4,253.6 L183.9,264.9 L186.5,255.6 L191.0,263.7 L196.9,257.8 L201.2,261.3 L200.6,270.1 L203.8,277.0 L202.1,284.2 L197.0,279.9 L195.2,286.4 L191.9,285.9 L190.6,281.1 L188.1,283.1 L184.3,270.5 L178.7,272.3 L178.5,275.5 L175.7,273.6 L170.3,277.5 L166.3,274.8 L165.2,268.8 L159.8,267.7 L155.0,269.7 L153.5,277.9 L145.2,284.2 L140.8,283.8 L137.6,276.1 L139.3,274.3 L134.4,269.4 L129.5,270.2 L133.0,256.6 L130.1,249.5 L133.8,247.0 L128.6,243.7 L131.9,237.7 L129.6,238.5 L127.6,222.8 L121.2,218.2 L116.4,222.7 L115.5,207.3 L107.5,212.9 L108.2,208.8 L111.9,208.2 L108.2,204.4 L105.2,209.7 L104.6,202.9 L107.1,195.1 L109.5,198.5 L110.5,189.1 L116.4,189.4 L117.1,181.2 L118.9,190.4 L116.1,200.1 L119.3,198.3 L119.0,193.3 L121.1,196.9 L121.1,191.9 L125.5,189.2 L124.6,185.5 L122.7,186.7 L119.0,183.0 L122.6,182.1 L118.8,180.4 L120.6,177.7 L126.9,179.1 L129.9,172.1 L138.3,178.7 L142.5,178.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="137.7" y="231.6" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">충남</text>
+<path d="M121.7,221.4 L125.2,242.2 L118.8,237.7 L117.6,222.6 L120.7,219.7 L121.7,221.4 Z M142.5,178.9 L148.3,181.7 L153.4,191.6 L172.7,182.1 L188.4,200.1 L189.6,204.5 L184.1,205.0 L180.9,211.5 L173.3,207.0 L170.6,209.6 L172.8,211.3 L172.4,220.3 L175.8,223.2 L173.4,230.7 L175.3,238.0 L180.7,240.5 L178.4,253.6 L183.9,264.9 L186.5,255.6 L191.0,263.7 L196.9,257.8 L201.2,261.3 L200.6,270.1 L203.8,277.0 L202.1,284.2 L197.0,279.9 L195.2,286.4 L191.9,285.9 L190.6,281.1 L188.1,283.1 L184.3,270.5 L178.7,272.3 L178.5,275.5 L175.7,273.6 L170.3,277.5 L166.3,274.8 L165.2,268.8 L159.8,267.7 L155.0,269.7 L153.5,277.9 L145.2,284.2 L140.8,283.8 L137.6,276.1 L139.3,274.3 L134.4,269.4 L129.5,270.2 L133.0,256.6 L130.1,249.5 L133.8,247.0 L128.6,243.7 L131.9,237.7 L129.6,238.5 L127.6,222.8 L121.2,218.2 L116.4,222.7 L115.5,207.3 L107.5,212.9 L108.2,208.8 L111.9,208.2 L108.2,204.4 L105.2,209.7 L104.6,202.9 L107.1,195.1 L109.5,198.5 L110.5,189.1 L116.4,189.4 L117.1,181.2 L118.9,190.4 L116.1,200.1 L119.3,198.3 L119.0,193.3 L121.1,196.9 L121.1,191.9 L125.5,189.2 L124.6,185.5 L122.7,186.7 L119.0,183.0 L122.6,182.1 L118.8,180.4 L120.6,177.7 L126.9,179.1 L129.9,172.1 L138.3,178.7 L142.5,178.9 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="evenodd"/>
+</g>
+<g class="rg" data-name="경상북도" data-short="경북" data-party="국민의힘" data-seats="12석" data-rate="12/13" data-color="#C0392B" data-cx="272.7" data-cy="236.8">
+<path d="M319.4,190.3 L323.1,210.7 L319.0,218.4 L321.6,230.9 L316.5,253.8 L316.4,263.6 L320.8,274.0 L316.4,279.0 L321.5,285.1 L328.3,275.1 L330.2,282.5 L325.9,291.6 L326.9,298.1 L321.4,320.9 L315.2,318.0 L311.1,321.6 L308.9,315.7 L301.4,313.2 L296.7,317.6 L297.5,321.8 L291.3,325.4 L286.7,322.0 L278.4,329.8 L271.9,326.8 L265.0,327.6 L262.1,323.8 L261.6,314.4 L265.0,311.7 L267.5,315.5 L271.7,313.5 L271.6,306.3 L276.6,298.3 L275.7,286.9 L272.4,282.5 L267.4,283.5 L263.2,288.3 L261.6,286.3 L259.8,296.2 L256.8,290.2 L253.2,294.7 L252.2,299.7 L258.6,303.6 L254.6,304.3 L252.2,309.3 L254.9,315.9 L250.1,315.3 L252.6,324.3 L247.2,320.5 L237.8,320.7 L240.4,313.8 L235.3,302.9 L222.4,299.4 L219.6,294.4 L221.5,289.5 L219.2,282.1 L224.8,276.6 L225.8,263.4 L231.0,263.0 L229.0,256.0 L224.7,257.7 L221.1,252.5 L217.6,255.2 L221.2,230.8 L214.0,221.6 L218.1,219.6 L219.2,215.1 L222.4,220.8 L222.9,214.3 L219.1,212.4 L222.7,211.5 L224.6,206.6 L231.8,209.7 L229.4,205.5 L231.1,198.2 L233.1,200.4 L235.9,196.5 L241.2,198.8 L242.9,192.4 L248.1,198.4 L254.6,198.8 L256.0,186.6 L264.1,175.4 L269.8,172.1 L276.2,176.0 L277.9,169.2 L285.5,174.3 L287.1,169.3 L296.1,172.1 L298.5,168.4 L307.7,174.9 L309.8,166.7 L315.9,163.6 L320.1,172.7 L319.4,190.3 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M416.3,122.0 L416.9,127.9 L414.0,131.2 L409.7,129.0 L408.7,123.9 L416.3,122.0 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="279.2" y="244.2" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">경북</text>
+<path d="M319.4,190.3 L323.1,210.7 L319.0,218.4 L321.6,230.9 L316.5,253.8 L316.4,263.6 L320.8,274.0 L316.4,279.0 L321.5,285.1 L328.3,275.1 L330.2,282.5 L325.9,291.6 L326.9,298.1 L321.4,320.9 L315.2,318.0 L311.1,321.6 L308.9,315.7 L301.4,313.2 L296.7,317.6 L297.5,321.8 L291.3,325.4 L286.7,322.0 L278.4,329.8 L271.9,326.8 L265.0,327.6 L262.1,323.8 L261.6,314.4 L265.0,311.7 L267.5,315.5 L271.7,313.5 L271.6,306.3 L276.6,298.3 L275.7,286.9 L272.4,282.5 L267.4,283.5 L263.2,288.3 L261.6,286.3 L259.8,296.2 L256.8,290.2 L253.2,294.7 L252.2,299.7 L258.6,303.6 L254.6,304.3 L252.2,309.3 L254.9,315.9 L250.1,315.3 L252.6,324.3 L247.2,320.5 L237.8,320.7 L240.4,313.8 L235.3,302.9 L222.4,299.4 L219.6,294.4 L221.5,289.5 L219.2,282.1 L224.8,276.6 L225.8,263.4 L231.0,263.0 L229.0,256.0 L224.7,257.7 L221.1,252.5 L217.6,255.2 L221.2,230.8 L214.0,221.6 L218.1,219.6 L219.2,215.1 L222.4,220.8 L222.9,214.3 L219.1,212.4 L222.7,211.5 L224.6,206.6 L231.8,209.7 L229.4,205.5 L231.1,198.2 L233.1,200.4 L235.9,196.5 L241.2,198.8 L242.9,192.4 L248.1,198.4 L254.6,198.8 L256.0,186.6 L264.1,175.4 L269.8,172.1 L276.2,176.0 L277.9,169.2 L285.5,174.3 L287.1,169.3 L296.1,172.1 L298.5,168.4 L307.7,174.9 L309.8,166.7 L315.9,163.6 L320.1,172.7 L319.4,190.3 Z M416.3,122.0 L416.9,127.9 L414.0,131.2 L409.7,129.0 L408.7,123.9 L416.3,122.0 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="evenodd"/>
+</g>
+<g class="rg" data-name="울산광역시" data-short="울산" data-party="국민의힘" data-seats="4석" data-rate="4/6" data-color="#C0392B" data-cx="308.4" data-cy="331.6">
+<path d="M302.6,314.1 L308.9,315.7 L311.1,321.6 L315.2,318.0 L321.4,320.9 L321.1,337.8 L318.6,339.8 L316.7,332.8 L317.6,339.1 L316.1,341.7 L313.7,338.4 L316.5,344.1 L315.6,352.0 L312.3,354.9 L309.4,348.7 L305.3,348.7 L305.1,343.4 L303.0,344.0 L295.8,333.4 L291.9,333.9 L290.3,330.5 L293.5,328.0 L293.5,322.7 L297.5,321.8 L297.4,316.2 L302.6,314.1 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="310.4" y="334.7" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">울산</text>
+<path d="M302.6,314.1 L308.9,315.7 L311.1,321.6 L315.2,318.0 L321.4,320.9 L321.1,337.8 L318.6,339.8 L316.7,332.8 L317.6,339.1 L316.1,341.7 L313.7,338.4 L316.5,344.1 L315.6,352.0 L312.3,354.9 L309.4,348.7 L305.3,348.7 L305.1,343.4 L303.0,344.0 L295.8,333.4 L291.9,333.9 L290.3,330.5 L293.5,328.0 L293.5,322.7 L297.5,321.8 L297.4,316.2 L302.6,314.1 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="경상남도" data-short="경남" data-party="국민의힘" data-seats="11석" data-rate="11/16" data-color="#C0392B" data-cx="233.8" data-cy="352.6">
+<path d="M250.3,406.4 L252.3,409.1 L255.9,407.5 L254.8,414.5 L250.9,411.0 L251.9,408.9 L249.0,408.6 L250.3,406.4 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M229.4,397.9 L227.9,403.5 L230.4,400.3 L232.9,407.6 L225.3,406.0 L229.4,397.9 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M221.0,404.1 L224.2,410.0 L226.6,407.1 L231.6,408.6 L230.2,420.8 L228.3,418.5 L224.5,420.1 L224.0,412.9 L221.0,414.1 L220.2,418.8 L216.7,415.9 L215.9,399.8 L218.3,399.9 L218.9,395.6 L222.3,395.6 L221.0,404.1 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M271.0,411.9 L268.7,414.6 L271.2,418.0 L268.0,417.2 L268.7,420.3 L264.7,420.8 L266.1,412.9 L263.2,414.0 L262.3,411.8 L265.2,410.8 L265.5,405.6 L260.4,409.6 L258.0,402.5 L261.5,397.5 L267.8,400.8 L265.3,395.1 L271.4,390.8 L271.3,385.2 L274.0,386.9 L272.4,402.3 L276.1,400.7 L272.8,406.4 L275.3,411.9 L271.0,409.0 L271.0,411.9 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M257.2,380.0 L258.2,381.5 L250.9,384.5 L252.5,387.7 L257.7,381.5 L259.8,387.3 L257.6,390.7 L253.7,390.1 L256.1,391.8 L254.6,402.8 L255.8,398.6 L258.1,401.1 L252.9,407.5 L251.4,404.9 L254.5,403.6 L246.6,400.0 L250.3,399.2 L248.1,393.4 L245.0,400.0 L243.2,395.4 L240.0,396.2 L240.3,400.7 L237.4,399.0 L235.9,401.2 L235.2,397.6 L230.7,396.9 L230.8,380.9 L228.6,386.5 L227.9,384.2 L225.7,386.0 L227.7,391.4 L223.0,391.4 L222.3,388.0 L220.6,394.1 L216.9,393.4 L214.3,397.6 L211.6,393.0 L212.3,384.3 L202.7,369.9 L199.8,358.4 L206.1,342.7 L200.3,331.2 L205.6,308.4 L210.7,300.6 L217.0,298.3 L218.2,294.0 L222.1,295.5 L222.4,299.4 L235.3,302.9 L240.4,313.8 L237.8,320.7 L249.9,321.4 L252.1,325.6 L260.1,322.2 L261.7,317.6 L265.0,327.6 L271.9,326.8 L278.1,329.8 L284.3,322.7 L288.4,322.6 L293.7,324.8 L290.3,330.5 L291.9,333.9 L295.8,333.4 L306.4,346.2 L303.8,352.4 L299.9,350.6 L299.3,357.4 L293.3,360.5 L291.5,365.1 L284.2,367.5 L284.1,373.6 L278.8,372.9 L282.0,377.5 L280.0,381.3 L278.5,377.5 L276.9,383.2 L275.5,378.9 L272.4,379.2 L272.1,373.9 L270.5,377.0 L269.3,373.6 L266.7,375.0 L265.5,368.5 L268.3,366.3 L263.9,370.0 L266.4,381.6 L268.6,382.1 L264.5,383.8 L266.0,382.1 L263.8,382.4 L265.1,379.9 L262.2,376.8 L257.2,380.0 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="232.5" y="360.0" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">경남</text>
+<path d="M250.3,406.4 L252.3,409.1 L255.9,407.5 L254.8,414.5 L250.9,411.0 L251.9,408.9 L249.0,408.6 L250.3,406.4 Z M271.3,284.8 L274.1,288.8 L274.3,298.3 L269.3,305.4 L270.4,310.8 L266.5,313.2 L265.8,309.5 L263.4,309.4 L260.4,319.6 L252.8,323.3 L254.4,320.0 L251.8,313.5 L256.1,313.7 L254.3,307.9 L257.0,303.8 L261.0,303.0 L254.6,300.4 L255.1,296.4 L257.8,292.5 L260.6,298.6 L261.7,288.8 L263.0,290.8 L266.7,285.9 L271.3,284.8 Z M229.4,397.9 L227.9,403.5 L230.4,400.3 L232.9,407.6 L225.3,406.0 L229.4,397.9 Z M221.0,404.1 L224.2,410.0 L226.6,407.1 L231.6,408.6 L230.2,420.8 L228.3,418.5 L224.5,420.1 L224.0,412.9 L221.0,414.1 L220.2,418.8 L216.7,415.9 L215.9,399.8 L218.3,399.9 L218.9,395.6 L222.3,395.6 L221.0,404.1 Z M271.0,411.9 L268.7,414.6 L271.2,418.0 L268.0,417.2 L268.7,420.3 L264.7,420.8 L266.1,412.9 L263.2,414.0 L262.3,411.8 L265.2,410.8 L265.5,405.6 L260.4,409.6 L258.0,402.5 L261.5,397.5 L267.8,400.8 L265.3,395.1 L271.4,390.8 L271.3,385.2 L274.0,386.9 L272.4,402.3 L276.1,400.7 L272.8,406.4 L275.3,411.9 L271.0,409.0 L271.0,411.9 Z M257.2,380.0 L258.2,381.5 L250.9,384.5 L252.5,387.7 L257.7,381.5 L259.8,387.3 L257.6,390.7 L253.7,390.1 L256.1,391.8 L254.6,402.8 L255.8,398.6 L258.1,401.1 L252.9,407.5 L251.4,404.9 L254.5,403.6 L246.6,400.0 L250.3,399.2 L248.1,393.4 L245.0,400.0 L243.2,395.4 L240.0,396.2 L240.3,400.7 L237.4,399.0 L235.9,401.2 L235.2,397.6 L230.7,396.9 L230.8,380.9 L228.6,386.5 L227.9,384.2 L225.7,386.0 L227.7,391.4 L223.0,391.4 L222.3,388.0 L220.6,394.1 L216.9,393.4 L214.3,397.6 L211.6,393.0 L212.3,384.3 L202.7,369.9 L199.8,358.4 L206.1,342.7 L200.3,331.2 L205.6,308.4 L210.7,300.6 L217.0,298.3 L218.2,294.0 L222.1,295.5 L222.4,299.4 L235.3,302.9 L240.4,313.8 L237.8,320.7 L249.9,321.4 L252.1,325.6 L260.1,322.2 L261.7,317.6 L265.0,327.6 L271.9,326.8 L278.1,329.8 L284.3,322.7 L288.4,322.6 L293.7,324.8 L290.3,330.5 L291.9,333.9 L295.8,333.4 L306.4,346.2 L303.8,352.4 L299.9,350.6 L299.3,357.4 L293.3,360.5 L291.5,365.1 L284.2,367.5 L284.1,373.6 L278.8,372.9 L282.0,377.5 L280.0,381.3 L278.5,377.5 L276.9,383.2 L275.5,378.9 L272.4,379.2 L272.1,373.9 L270.5,377.0 L269.3,373.6 L266.7,375.0 L265.5,368.5 L268.3,366.3 L263.9,370.0 L266.4,381.6 L268.6,382.1 L264.5,383.8 L266.0,382.1 L263.8,382.4 L265.1,379.9 L262.2,376.8 L257.2,380.0 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="evenodd"/>
+</g>
+<g class="rg" data-name="부산광역시" data-short="부산" data-party="국민의힘" data-seats="14석" data-rate="14/18" data-color="#C0392B" data-cx="295.5" data-cy="370.5">
+<path d="M281.1,380.0 L281.0,390.7 L278.6,383.0 L281.1,380.0 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M289.6,384.2 L289.4,378.3 L287.8,381.7 L288.0,377.9 L285.4,381.2 L285.6,376.8 L284.7,381.1 L281.7,380.8 L278.8,372.9 L284.2,373.5 L284.2,367.5 L291.5,365.1 L293.3,360.5 L299.3,357.4 L299.9,350.6 L303.6,352.5 L305.1,348.5 L309.4,348.7 L312.1,355.4 L309.2,356.3 L306.8,369.9 L299.8,373.5 L300.3,379.0 L295.6,376.2 L293.3,383.8 L292.3,380.4 L292.7,384.3 L290.4,383.5 L290.0,386.1 L289.6,384.2 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="294.8" y="374.7" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">부산</text>
+<path d="M281.1,380.0 L281.0,390.7 L278.6,383.0 L281.1,380.0 Z M289.6,384.2 L289.4,378.3 L287.8,381.7 L288.0,377.9 L285.4,381.2 L285.6,376.8 L284.7,381.1 L281.7,380.8 L278.8,372.9 L284.2,373.5 L284.2,367.5 L291.5,365.1 L293.3,360.5 L299.3,357.4 L299.9,350.6 L303.6,352.5 L305.1,348.5 L309.4,348.7 L312.1,355.4 L309.2,356.3 L306.8,369.9 L299.8,373.5 L300.3,379.0 L295.6,376.2 L293.3,383.8 L292.3,380.4 L292.7,384.3 L290.4,383.5 L290.0,386.1 L289.6,384.2 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="전라북도" data-short="전북" data-party="더불어민주당" data-seats="6석" data-rate="6/10" data-color="#3D6DB5" data-cx="168.8" data-cy="307.4">
+<path d="M142.8,284.7 L140.0,285.6 L142.8,284.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M162.0,268.8 L165.2,268.8 L166.3,274.8 L170.3,277.5 L175.7,273.6 L178.5,275.5 L178.7,272.3 L184.3,270.5 L186.8,281.8 L190.6,281.1 L194.0,286.5 L197.0,285.1 L196.8,279.9 L202.2,284.1 L202.8,277.1 L205.5,280.3 L207.1,277.6 L211.9,282.9 L217.4,280.0 L219.3,281.8 L220.0,293.5 L217.0,298.3 L210.7,300.6 L205.4,309.0 L200.3,331.2 L206.1,342.7 L200.4,356.9 L192.8,351.0 L187.3,357.6 L176.9,354.2 L175.6,356.3 L174.4,354.0 L169.2,358.0 L165.1,355.6 L166.9,351.0 L164.1,347.9 L164.6,340.4 L158.6,348.0 L150.9,338.2 L145.5,341.8 L144.3,350.9 L139.3,355.8 L135.4,354.7 L135.4,357.8 L131.8,357.0 L129.3,346.0 L125.2,343.7 L128.9,334.5 L136.1,333.7 L138.0,329.1 L141.3,332.0 L140.1,327.7 L130.4,328.5 L127.3,325.3 L127.1,322.3 L133.5,316.0 L128.5,303.9 L134.4,317.2 L138.4,305.3 L143.3,305.6 L141.2,295.9 L137.1,296.1 L135.9,289.6 L135.6,294.5 L132.1,291.2 L126.6,304.6 L131.8,291.9 L130.7,286.8 L145.3,285.7 L146.0,281.5 L153.8,277.6 L155.0,269.7 L162.0,268.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="167.5" y="313.7" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">전북</text>
+<path d="M142.8,284.7 L140.0,285.6 L142.8,284.7 Z M162.0,268.8 L165.2,268.8 L166.3,274.8 L170.3,277.5 L175.7,273.6 L178.5,275.5 L178.7,272.3 L184.3,270.5 L186.8,281.8 L190.6,281.1 L194.0,286.5 L197.0,285.1 L196.8,279.9 L202.2,284.1 L202.8,277.1 L205.5,280.3 L207.1,277.6 L211.9,282.9 L217.4,280.0 L219.3,281.8 L220.0,293.5 L217.0,298.3 L210.7,300.6 L205.4,309.0 L200.3,331.2 L206.1,342.7 L200.4,356.9 L192.8,351.0 L187.3,357.6 L176.9,354.2 L175.6,356.3 L174.4,354.0 L169.2,358.0 L165.1,355.6 L166.9,351.0 L164.1,347.9 L164.6,340.4 L158.6,348.0 L150.9,338.2 L145.5,341.8 L144.3,350.9 L139.3,355.8 L135.4,354.7 L135.4,357.8 L131.8,357.0 L129.3,346.0 L125.2,343.7 L128.9,334.5 L136.1,333.7 L138.0,329.1 L141.3,332.0 L140.1,327.7 L130.4,328.5 L127.3,325.3 L127.1,322.3 L133.5,316.0 L128.5,303.9 L134.4,317.2 L138.4,305.3 L143.3,305.6 L141.2,295.9 L137.1,296.1 L135.9,289.6 L135.6,294.5 L132.1,291.2 L126.6,304.6 L131.8,291.9 L130.7,286.8 L145.3,285.7 L146.0,281.5 L153.8,277.6 L155.0,269.7 L162.0,268.8 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="전라남도" data-short="전남" data-party="더불어민주당" data-seats="7석" data-rate="7/10" data-color="#3D6DB5" data-cx="152.6" data-cy="400.0">
+<path d="M133.1,476.1 L137.4,479.1 L135.7,477.6 L130.6,481.9 L130.2,477.8 L133.1,476.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M139.9,473.9 L141.9,475.6 L140.3,483.1 L138.2,479.4 L139.9,473.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M155.2,471.9 L157.0,478.1 L153.0,478.9 L155.2,471.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M134.3,470.1 L138.0,473.2 L135.6,476.6 L132.9,474.5 L134.3,470.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M151.9,461.9 L146.2,459.4 L151.5,457.0 L155.6,458.4 L154.6,462.1 L151.9,461.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M164.3,459.0 L161.4,456.9 L164.3,454.6 L168.9,459.2 L166.7,458.2 L165.0,462.3 L164.3,459.0 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M142.5,452.8 L147.9,464.5 L142.5,464.0 L139.3,460.2 L138.9,454.4 L142.5,452.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M158.6,453.4 L157.0,457.3 L153.5,455.4 L153.7,451.4 L157.8,453.6 L158.8,451.3 L158.6,453.4 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M151.5,448.7 L153.6,453.8 L148.9,454.5 L148.0,457.7 L147.0,451.6 L151.5,448.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M193.4,445.9 L197.3,447.7 L194.3,451.4 L193.9,447.6 L191.5,447.5 L191.9,444.6 L193.4,445.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M176.5,442.6 L175.9,449.5 L168.9,448.3 L169.5,443.6 L176.5,442.6 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M192.6,437.5 L192.0,440.6 L195.2,443.1 L191.7,444.4 L192.6,437.5 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M212.3,438.9 L213.7,443.5 L207.6,438.1 L210.4,436.5 L212.3,438.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M113.8,433.2 L119.5,436.8 L122.4,444.2 L119.3,452.6 L118.3,450.1 L116.4,451.7 L117.4,455.4 L114.6,452.9 L109.1,458.0 L105.8,456.9 L106.7,454.2 L103.2,450.6 L109.6,440.8 L110.7,442.6 L113.8,433.2 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M101.2,428.6 L104.6,433.0 L100.1,438.9 L101.3,436.3 L99.1,436.2 L103.1,433.2 L101.2,428.6 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M98.5,427.8 L101.6,433.3 L99.0,435.4 L98.5,427.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M107.8,424.3 L110.5,427.9 L105.8,430.2 L104.5,426.4 L107.8,424.3 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M60.1,421.4 L62.6,422.4 L58.5,428.9 L60.1,421.4 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M213.4,419.8 L211.6,420.7 L214.7,425.1 L213.8,433.2 L208.6,429.3 L211.9,422.4 L210.3,417.6 L213.4,419.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M95.5,418.4 L98.3,421.3 L94.8,425.6 L91.9,419.9 L95.5,418.4 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M104.2,414.1 L108.7,415.4 L108.7,421.0 L106.3,418.0 L102.3,420.1 L101.6,413.8 L104.2,414.1 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M120.6,412.7 L120.8,416.3 L120.6,412.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M97.0,409.8 L97.3,414.6 L94.8,416.1 L94.4,414.0 L91.8,419.2 L90.9,412.6 L97.0,409.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M104.9,401.9 L107.2,406.0 L102.3,411.1 L100.2,407.8 L102.6,408.5 L101.3,405.5 L104.9,405.2 L104.9,401.9 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M116.5,405.3 L112.1,405.2 L116.8,401.9 L116.9,397.7 L120.2,400.1 L117.8,403.5 L121.6,407.1 L120.1,409.1 L119.8,406.1 L116.5,405.3 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M101.5,396.5 L103.8,401.4 L100.2,405.8 L95.3,402.6 L101.5,396.5 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M210.3,395.8 L213.3,401.4 L208.1,398.6 L210.3,395.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M106.2,386.7 L109.1,392.3 L105.5,395.1 L106.7,390.2 L103.8,388.9 L106.2,386.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M101.0,381.6 L100.6,378.7 L108.0,374.1 L105.3,375.7 L104.0,384.4 L101.0,381.6 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<path d="M155.2,446.7 L154.8,450.3 L148.6,446.3 L148.0,430.2 L146.3,445.3 L137.4,452.4 L136.8,461.5 L131.0,463.5 L131.2,456.7 L127.6,456.6 L131.0,451.1 L127.0,447.6 L127.3,438.7 L124.4,436.0 L122.5,438.7 L122.3,435.6 L117.8,435.0 L114.2,430.3 L116.5,428.5 L114.0,424.9 L115.9,415.0 L120.9,421.7 L122.1,413.8 L126.6,412.4 L120.1,410.9 L124.2,406.0 L121.7,389.6 L121.3,397.9 L117.3,397.0 L116.6,393.1 L117.7,390.7 L119.8,392.4 L122.8,386.1 L118.2,380.1 L113.6,388.2 L107.6,380.0 L109.8,377.6 L114.2,379.6 L114.2,374.4 L118.2,376.1 L119.9,372.7 L118.9,379.6 L121.4,383.0 L122.8,380.4 L125.2,386.6 L127.6,379.0 L120.7,371.7 L121.9,367.2 L119.4,369.4 L116.7,366.1 L118.8,360.0 L121.5,359.6 L123.2,350.6 L126.5,352.8 L124.0,343.9 L128.3,344.3 L129.4,352.6 L135.4,357.8 L135.4,354.7 L139.3,355.8 L144.3,350.9 L145.5,341.8 L150.9,338.2 L158.6,348.0 L164.6,340.4 L164.1,347.9 L166.9,351.0 L165.1,355.6 L169.2,358.0 L174.4,354.0 L175.6,356.3 L176.9,354.2 L187.3,357.6 L190.7,351.3 L195.0,351.8 L199.8,357.0 L202.7,369.9 L213.4,387.6 L212.2,396.4 L209.8,394.2 L203.9,401.7 L205.0,399.0 L199.9,398.0 L203.7,407.6 L207.5,403.7 L212.7,404.3 L211.4,417.0 L208.0,418.9 L205.1,415.2 L202.2,420.2 L204.3,428.6 L200.7,426.1 L200.1,428.4 L198.1,424.9 L200.9,415.9 L194.2,402.6 L193.9,406.1 L185.3,406.4 L190.0,408.9 L186.9,418.2 L194.0,426.1 L192.1,426.8 L195.3,432.4 L194.0,434.4 L188.1,432.8 L190.3,440.7 L184.4,443.3 L184.4,447.7 L178.9,439.9 L171.8,439.9 L169.7,437.1 L178.7,419.8 L180.6,419.1 L182.7,424.8 L184.7,420.1 L183.6,415.6 L179.3,417.7 L178.1,414.7 L174.0,421.9 L170.4,420.9 L165.5,427.8 L159.5,428.4 L162.9,430.6 L161.0,445.1 L158.5,444.0 L158.4,447.7 L155.2,446.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="152.6" y="408.4" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">전남</text>
+<path d="M133.1,476.1 L137.4,479.1 L135.7,477.6 L130.6,481.9 L130.2,477.8 L133.1,476.1 Z M148.0,364.8 L150.3,368.9 L155.5,364.5 L157.8,370.9 L161.3,371.5 L157.6,379.9 L155.5,377.8 L148.2,381.5 L146.9,375.9 L142.2,376.3 L142.2,369.8 L148.0,364.8 Z M139.9,473.9 L141.9,475.6 L140.3,483.1 L138.2,479.4 L139.9,473.9 Z M155.2,471.9 L157.0,478.1 L153.0,478.9 L155.2,471.9 Z M134.3,470.1 L138.0,473.2 L135.6,476.6 L132.9,474.5 L134.3,470.1 Z M151.9,461.9 L146.2,459.4 L151.5,457.0 L155.6,458.4 L154.6,462.1 L151.9,461.9 Z M164.3,459.0 L161.4,456.9 L164.3,454.6 L168.9,459.2 L166.7,458.2 L165.0,462.3 L164.3,459.0 Z M142.5,452.8 L147.9,464.5 L142.5,464.0 L139.3,460.2 L138.9,454.4 L142.5,452.8 Z M158.6,453.4 L157.0,457.3 L153.5,455.4 L153.7,451.4 L157.8,453.6 L158.8,451.3 L158.6,453.4 Z M151.5,448.7 L153.6,453.8 L148.9,454.5 L148.0,457.7 L147.0,451.6 L151.5,448.7 Z M193.4,445.9 L197.3,447.7 L194.3,451.4 L193.9,447.6 L191.5,447.5 L191.9,444.6 L193.4,445.9 Z M176.5,442.6 L175.9,449.5 L168.9,448.3 L169.5,443.6 L176.5,442.6 Z M192.6,437.5 L192.0,440.6 L195.2,443.1 L191.7,444.4 L192.6,437.5 Z M212.3,438.9 L213.7,443.5 L207.6,438.1 L210.4,436.5 L212.3,438.9 Z M113.8,433.2 L119.5,436.8 L122.4,444.2 L119.3,452.6 L118.3,450.1 L116.4,451.7 L117.4,455.4 L114.6,452.9 L109.1,458.0 L105.8,456.9 L106.7,454.2 L103.2,450.6 L109.6,440.8 L110.7,442.6 L113.8,433.2 Z M101.2,428.6 L104.6,433.0 L100.1,438.9 L101.3,436.3 L99.1,436.2 L103.1,433.2 L101.2,428.6 Z M98.5,427.8 L101.6,433.3 L99.0,435.4 L98.5,427.8 Z M107.8,424.3 L110.5,427.9 L105.8,430.2 L104.5,426.4 L107.8,424.3 Z M60.1,421.4 L62.6,422.4 L58.5,428.9 L60.1,421.4 Z M213.4,419.8 L211.6,420.7 L214.7,425.1 L213.8,433.2 L208.6,429.3 L211.9,422.4 L210.3,417.6 L213.4,419.8 Z M95.5,418.4 L98.3,421.3 L94.8,425.6 L91.9,419.9 L95.5,418.4 Z M104.2,414.1 L108.7,415.4 L108.7,421.0 L106.3,418.0 L102.3,420.1 L101.6,413.8 L104.2,414.1 Z M120.6,412.7 L120.8,416.3 L120.6,412.7 Z M97.0,409.8 L97.3,414.6 L94.8,416.1 L94.4,414.0 L91.8,419.2 L90.9,412.6 L97.0,409.8 Z M104.9,401.9 L107.2,406.0 L102.3,411.1 L100.2,407.8 L102.6,408.5 L101.3,405.5 L104.9,405.2 L104.9,401.9 Z M116.5,405.3 L112.1,405.2 L116.8,401.9 L116.9,397.7 L120.2,400.1 L117.8,403.5 L121.6,407.1 L120.1,409.1 L119.8,406.1 L116.5,405.3 Z M101.5,396.5 L103.8,401.4 L100.2,405.8 L95.3,402.6 L101.5,396.5 Z M210.3,395.8 L213.3,401.4 L208.1,398.6 L210.3,395.8 Z M106.2,386.7 L109.1,392.3 L105.5,395.1 L106.7,390.2 L103.8,388.9 L106.2,386.7 Z M101.0,381.6 L100.6,378.7 L108.0,374.1 L105.3,375.7 L104.0,384.4 L101.0,381.6 Z M155.2,446.7 L154.8,450.3 L148.6,446.3 L148.0,430.2 L146.3,445.3 L137.4,452.4 L136.8,461.5 L131.0,463.5 L131.2,456.7 L127.6,456.6 L131.0,451.1 L127.0,447.6 L127.3,438.7 L124.4,436.0 L122.5,438.7 L122.3,435.6 L117.8,435.0 L114.2,430.3 L116.5,428.5 L114.0,424.9 L115.9,415.0 L120.9,421.7 L122.1,413.8 L126.6,412.4 L120.1,410.9 L124.2,406.0 L121.7,389.6 L121.3,397.9 L117.3,397.0 L116.6,393.1 L117.7,390.7 L119.8,392.4 L122.8,386.1 L118.2,380.1 L113.6,388.2 L107.6,380.0 L109.8,377.6 L114.2,379.6 L114.2,374.4 L118.2,376.1 L119.9,372.7 L118.9,379.6 L121.4,383.0 L122.8,380.4 L125.2,386.6 L127.6,379.0 L120.7,371.7 L121.9,367.2 L119.4,369.4 L116.7,366.1 L118.8,360.0 L121.5,359.6 L123.2,350.6 L126.5,352.8 L124.0,343.9 L128.3,344.3 L129.4,352.6 L135.4,357.8 L135.4,354.7 L139.3,355.8 L144.3,350.9 L145.5,341.8 L150.9,338.2 L158.6,348.0 L164.6,340.4 L164.1,347.9 L166.9,351.0 L165.1,355.6 L169.2,358.0 L174.4,354.0 L175.6,356.3 L176.9,354.2 L187.3,357.6 L190.7,351.3 L195.0,351.8 L199.8,357.0 L202.7,369.9 L213.4,387.6 L212.2,396.4 L209.8,394.2 L203.9,401.7 L205.0,399.0 L199.9,398.0 L203.7,407.6 L207.5,403.7 L212.7,404.3 L211.4,417.0 L208.0,418.9 L205.1,415.2 L202.2,420.2 L204.3,428.6 L200.7,426.1 L200.1,428.4 L198.1,424.9 L200.9,415.9 L194.2,402.6 L193.9,406.1 L185.3,406.4 L190.0,408.9 L186.9,418.2 L194.0,426.1 L192.1,426.8 L195.3,432.4 L194.0,434.4 L188.1,432.8 L190.3,440.7 L184.4,443.3 L184.4,447.7 L178.9,439.9 L171.8,439.9 L169.7,437.1 L178.7,419.8 L180.6,419.1 L182.7,424.8 L184.7,420.1 L183.6,415.6 L179.3,417.7 L178.1,414.7 L174.0,421.9 L170.4,420.9 L165.5,427.8 L159.5,428.4 L162.9,430.6 L161.0,445.1 L158.5,444.0 L158.4,447.7 L155.2,446.7 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="evenodd"/>
+</g>
+<g class="rg" data-name="제주특별자치도" data-short="제주" data-party="더불어민주당" data-seats="3석" data-rate="3/3" data-color="#3D6DB5" data-cx="133.1" data-cy="530.0">
+<path d="M156.0,515.8 L158.9,521.9 L151.2,537.8 L140.2,541.1 L136.4,545.3 L118.6,544.7 L116.2,549.5 L109.2,542.7 L108.2,533.9 L117.7,520.5 L147.1,510.4 L156.0,515.8 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="133.1" y="532.0" font-size="11" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">제주</text>
+<path d="M156.0,515.8 L158.9,521.9 L151.2,537.8 L140.2,541.1 L136.4,545.3 L118.6,544.7 L116.2,549.5 L109.2,542.7 L108.2,533.9 L117.7,520.5 L147.1,510.4 L156.0,515.8 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="대전광역시" data-short="대전" data-party="더불어민주당" data-seats="5석" data-rate="5/7" data-color="#3D6DB5" data-cx="187.0" data-cy="247.4">
+<path d="M188.2,232.7 L188.8,236.3 L193.8,234.0 L194.9,241.2 L196.4,239.6 L198.7,242.3 L194.8,248.5 L194.2,259.6 L191.0,263.7 L185.9,255.9 L183.9,264.9 L178.4,253.5 L180.7,240.5 L188.2,232.7 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="188.3" y="249.5" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">대전</text>
+<path d="M188.2,232.7 L188.8,236.3 L193.8,234.0 L194.9,241.2 L196.4,239.6 L198.7,242.3 L194.8,248.5 L194.2,259.6 L191.0,263.7 L185.9,255.9 L183.9,264.9 L178.4,253.5 L180.7,240.5 L188.2,232.7 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="세종특별자치시" data-short="세종" data-party="무소속" data-seats="1석" data-rate="1/1" data-color="#888888" data-cx="178.6" data-cy="231.6">
+<path d="M173.5,207.3 L182.1,212.1 L181.8,222.5 L186.9,224.4 L188.9,228.7 L184.4,239.0 L178.6,241.4 L173.4,230.7 L175.8,223.2 L172.4,220.3 L172.8,211.3 L170.6,209.6 L173.5,207.3 Z" fill="#888888" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="179.9" y="233.7" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">세종</text>
+<path d="M173.5,207.3 L182.1,212.1 L181.8,222.5 L186.9,224.4 L188.9,228.7 L184.4,239.0 L178.6,241.4 L173.4,230.7 L175.8,223.2 L172.4,220.3 L172.8,211.3 L170.6,209.6 L173.5,207.3 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="대구광역시" data-short="대구" data-party="국민의힘" data-seats="11석" data-rate="11/12" data-color="#C0392B" data-cx="266.2" data-cy="296.8">
+<path d="M272.5,282.6 L275.7,286.9 L276.7,297.5 L271.6,306.3 L272.2,312.5 L267.5,315.5 L267.0,311.7 L263.9,311.9 L260.2,322.1 L251.8,325.6 L253.4,322.3 L250.1,315.3 L254.9,315.9 L252.2,309.3 L254.6,304.3 L258.6,303.6 L252.2,299.7 L253.2,294.7 L256.8,290.2 L259.8,296.2 L261.6,286.3 L263.2,288.3 L267.4,283.5 L272.5,282.6 Z" fill="#C0392B" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="264.9" y="298.9" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">대구</text>
+<path d="M272.5,282.6 L275.7,286.9 L276.7,297.5 L271.6,306.3 L272.2,312.5 L267.5,315.5 L267.0,311.7 L263.9,311.9 L260.2,322.1 L251.8,325.6 L253.4,322.3 L250.1,315.3 L254.9,315.9 L252.2,309.3 L254.6,304.3 L258.6,303.6 L252.2,299.7 L253.2,294.7 L256.8,290.2 L259.8,296.2 L261.6,286.3 L263.2,288.3 L267.4,283.5 L272.5,282.6 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+<g class="rg" data-name="광주광역시" data-short="광주" data-party="더불어민주당" data-seats="7석" data-rate="7/8" data-color="#3D6DB5" data-cx="152.6" data-cy="372.6">
+<path d="M147.0,362.5 L149.7,366.5 L156.8,362.3 L160.3,370.5 L163.8,371.4 L159.2,381.8 L157.0,379.8 L147.5,383.9 L145.0,377.6 L139.9,377.4 L139.8,369.2 L147.0,362.5 Z" fill="#3D6DB5" fill-opacity="0.85" stroke="rgba(255,255,255,0.45)" stroke-width="1.1" pointer-events="none"/>
+<text x="151.3" y="374.7" font-size="9" fill="rgba(255,255,255,0.9)" font-family="Noto Sans KR,sans-serif" text-anchor="middle" pointer-events="none" font-weight="500" style="text-shadow:0 1px 3px rgba(0,0,0,0.6);">광주</text>
+<path d="M147.0,362.5 L149.7,366.5 L156.8,362.3 L160.3,370.5 L163.8,371.4 L159.2,381.8 L157.0,379.8 L147.5,383.9 L145.0,377.6 L139.9,377.4 L139.8,369.2 L147.0,362.5 Z" fill="transparent" stroke="none" pointer-events="all" fill-rule="nonzero"/>
+</g>
+        </svg>
+      </div>
+      <div class="legend">
+        <div class="li2"><div class="ld2" style="background:#3D6DB5"></div>더불어민주당 153</div>
+        <div class="li2"><div class="ld2" style="background:#C0392B"></div>국민의힘 89</div>
+        <div class="li2"><div class="ld2" style="background:#888888"></div>무소속 6</div>
+        <div class="li2"><div class="ld2" style="background:#FF6B00"></div>개혁신당 1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="tk" id="tk">
+    <div class="tt">
+      <div class="ti"><span class="th">소득세법 일부개정안</span><span class="ts"></span>기획재정위 계류중</div>
+      <div class="ti"><span class="ts"></span><span class="th">의료법 전부개정안</span><span class="ts"></span>보건복지위 심사중</div>
+      <div class="ti"><span class="ts"></span><span class="th">개인정보보호법 개정안</span><span class="ts"></span>과기위 가결</div>
+      <div class="ti"><span class="ts"></span><span class="th">부동산거래신고법</span><span class="ts"></span>국토위 폐기</div>
+      <div class="ti"><span class="ts"></span><span class="th">국민연금법 개정안</span><span class="ts"></span>보건복지위 소위 검토</div>
+      <div class="ti"><span class="ts"></span><span class="th">방송법 전부개정안</span><span class="ts"></span>과기위 계류중</div>
+      <div class="ti"><span class="ts"></span><span class="th">근로기준법 개정안</span><span class="ts"></span>환노위 심사중</div>
+      <div class="ti"><span class="ts"></span><span class="th">소득세법 일부개정안</span><span class="ts"></span>기획재정위 계류중</div>
+      <div class="ti"><span class="ts"></span><span class="th">의료법 전부개정안</span><span class="ts"></span>보건복지위 심사중</div>
+      <div class="ti"><span class="ts"></span><span class="th">개인정보보호법 개정안</span><span class="ts"></span>과기위 가결</div>
+      <div class="ti"><span class="ts"></span><span class="th">부동산거래신고법</span><span class="ts"></span>국토위 폐기</div>
+      <div class="ti"><span class="ts"></span><span class="th">국민연금법 개정안</span><span class="ts"></span>보건복지위 소위 검토</div>
+      <div class="ti"><span class="ts"></span><span class="th">방송법 전부개정안</span><span class="ts"></span>과기위 계류중</div>
+      <div class="ti"><span class="ts"></span><span class="th">근로기준법 개정안</span><span class="ts"></span>환노위 심사중</div>
+    </div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div id="fc">
+    <div class="fcard"><div class="fn">01</div><div class="ft">의원 프로필</div><div class="fd">300명 발의·표결·출석·재산·경력. 정당 이탈 표시, 위원회별 활동.</div><div class="fa"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 9.5L9.5 1.5M9.5 1.5H4.5M9.5 1.5V6.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div></div>
+    <div class="fcard"><div class="fn">02</div><div class="ft">법안 추적</div><div class="fd">17,241건 전수. AI 요약 + 페르소나별 해석. 직장인·자영업자·학생.</div><div class="fa"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 9.5L9.5 1.5M9.5 1.5H4.5M9.5 1.5V6.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div></div>
+    <div class="fcard"><div class="fn">03</div><div class="ft">표결 기록</div><div class="fd">4,812건 표결 전수. 찬반 비율, 정당별 투표, 접전 표결 하이라이트.</div><div class="fa"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 9.5L9.5 1.5M9.5 1.5H4.5M9.5 1.5V6.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div></div>
+  </div>
+</section>
+
+<!-- SNAP PANELS -->
+<div class="sp sp1" id="p1">
+  <div class="sp-left">
+    <div class="sp-num">01 / 03</div>
+    <div class="sp-title">의원 <em>프로필</em></div>
+    <div class="sp-desc">300명 의원의 발의·표결·출석·재산·경력을 한 페이지에. 정당 이탈 표시, 위원회별 활동, 역대 대수 비교. 숫자로 보는 의원, 말이 아닌 기록으로.</div>
+    <div class="sp-tags"><div class="sp-tag">발의 법안 추적</div><div class="sp-tag">표결 이탈 감지</div><div class="sp-tag">출석률 시각화</div></div>
+  </div>
+  <div class="sp-right">
+    <div class="sp-deco" id="deco1"></div>
+  </div>
+</div>
+<div class="sp sp2" id="p2">
+  <div class="sp-left">
+    <div class="sp-num">02 / 03</div>
+    <div class="sp-title">법안을<br><em>내 삶의 언어</em>로</div>
+    <div class="sp-desc">17,241건 발의 법안 전수 수록. AI가 법조문을 직장인·자영업자·학생 언어로 풀어냄. 이 법이 나한테 어떤 영향을 주는가를 먼저 답합니다.</div>
+    <div class="sp-tags"><div class="sp-tag">AI 요약</div><div class="sp-tag">페르소나 해석</div><div class="sp-tag">원문 링크</div></div>
+  </div>
+  <div class="sp-right">
+    <div class="sp-deco" id="deco2"></div>
+  </div>
+</div>
+<div class="sp sp3" id="p3">
+  <div class="sp-left">
+    <div class="sp-num">03 / 03</div>
+    <div class="sp-title">표결,<br><em>있는 그대로</em></div>
+    <div class="sp-desc">4,812건 표결 전수 공개. 찬반 비율, 정당별 투표 내역, 접전 표결 하이라이트. 편집 없이, 원문 그대로.</div>
+    <div class="sp-tags"><div class="sp-tag">찬반 시각화</div><div class="sp-tag">정당별 비교</div><div class="sp-tag">접전 표결 강조</div></div>
+  </div>
+  <div class="sp-right">
+    <div class="sp-deco" id="deco3"></div>
+  </div>
+</div>
+
+<footer>
+  <div><div class="flo">PoliScope</div><div style="font-size:10px;color:var(--t3);margin-top:2px;">대한민국 국회 투명성 플랫폼</div></div>
+  <div class="fno">국회 공공데이터 API 기반 · 원문 출처 제공 · 정치적 중립</div>
+  <div class="fbg"><div class="fbd"></div>실시간 업데이트 중</div>
+</footer>
+
+</div><!-- /sw -->
+
+<!-- TOOLTIP -->
+<div id="tip">
+  <div class="tr" id="tr"></div>
+  <div class="tp"><div class="tpd" id="tpd"></div><span id="tpn"></span></div>
+  <div class="ts2" id="ts2"></div>
+  
+</div>
+
+<!-- SCROLL DOTS -->
+<div id="dots">
+  <div class="dot on" data-sec="hero"></div>
+  <div class="dot" data-sec="p1"></div>
+  <div class="dot" data-sec="p2"></div>
+  <div class="dot" data-sec="p3"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── HELPERS ──────────────────────────────────────────────
+  function qs(id) { return document.getElementById(id); }
+  function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+  // ── LOADER ───────────────────────────────────────────────
+  function runLoader(onDone) {
+    var els = [qs('l1'), qs('l2'), qs('l3')];
+    var lb = qs('lb'), lf = qs('lf'), ln = qs('ln');
+    setTimeout(function(){ els[0] && els[0].classList.add('s'); }, 180);
+    setTimeout(function(){ els[1] && els[1].classList.add('s'); }, 650);
+    setTimeout(function(){ els[2] && els[2].classList.add('s'); }, 1100);
+    setTimeout(function(){
+      if(lb) lb.classList.add('s');
+      if(lf) lf.style.width = '100%';
+      var n = 0;
+      var iv = setInterval(function(){
+        n = Math.min(n + 3, 100);
+        if(ln) ln.textContent = n + '%';
+        if(n >= 100) clearInterval(iv);
+      }, 64);
+    }, 1400);
+    setTimeout(function(){
+      var ld = qs('ld');
+      if(ld) ld.classList.add('out');
+      onDone();
+    }, 3500);
+  }
+
+  // ── SHOW UI ──────────────────────────────────────────────
+  function showUI() {
+    var nav = qs('nav'), hl = qs('hl'), hr = qs('hr'), tk = qs('tk'), dotEl = qs('dots');
+    if(nav) nav.classList.add('s');
+    if(hl) hl.classList.add('s');
+    if(hr) hr.classList.add('s');
+    if(tk) tk.classList.add('s');
+    if(dotEl) setTimeout(function(){ dotEl.classList.add('s'); }, 600);
+  }
+
+  // ── MAP ──────────────────────────────────────────────────
+  function initMap() {
+    var svg = qs('kmap');
+    var tip = qs('tip');
+    var tr = qs('tr'), tpd = qs('tpd'), tpn = qs('tpn'), ts2 = qs('ts2');
+    if(!svg || !tip) return;
+
+    var INNER = ['광주광역시','대전광역시','세종특별자치시','대구광역시'];
+    var groups = qsa('.rg');
+    var hovered = null, selected = null;
+
+    // darken helper
+    function darken(hex, f) {
+      var r = parseInt(hex.slice(1,3),16);
+      var g = parseInt(hex.slice(3,5),16);
+      var b = parseInt(hex.slice(5,7),16);
+      return '#' + [r,g,b].map(function(v){ return Math.round(v*f).toString(16).padStart(2,'0'); }).join('');
+    }
+
+    // Build depth layers (3 layers only)
+    groups.forEach(function(g) {
+      var color = g.dataset.color || '#888';
+      var mainPath = g.querySelector('path[pointer-events="none"]');
+      if(!mainPath) return;
+      var dg = document.createElementNS('http://www.w3.org/2000/svg','g');
+      dg.classList.add('dl');
+      [8, 5, 2].forEach(function(offset, i) {
+        var shade = darken(color, 0.38 + i * 0.1);
+        var c = mainPath.cloneNode(false);
+        c.setAttribute('transform', 'translate(0,' + offset + ')');
+        c.setAttribute('fill', shade);
+        c.setAttribute('fill-opacity', '1');
+        c.setAttribute('stroke', 'none');
+        c.setAttribute('pointer-events', 'none');
+        dg.appendChild(c);
+      });
+      g.insertBefore(dg, g.firstChild);
+      // text always on top
+      var lbl = g.querySelector('text');
+      if(lbl) g.appendChild(lbl);
+    });
+
+    // Inner cities always on top
+    INNER.forEach(function(name) {
+      var g = groups.find(function(el){ return el.dataset.name === name; });
+      if(g) svg.appendChild(g);
+    });
+
+    function toFront(g) {
+      svg.appendChild(g);
+      // keep inner cities on top
+      if(INNER.indexOf(g.dataset.name) === -1) {
+        INNER.forEach(function(name) {
+          var ic = groups.find(function(el){ return el.dataset.name === name; });
+          if(ic) svg.appendChild(ic);
+        });
+      }
+    }
+
+    // Lift
+    function lift(g, amt) {
+      if(!g) return;
+      var dl = g.querySelector('.dl');
+      if(amt === 0) {
+        g.style.transform = '';
+        g.style.filter = '';
+        if(dl) { dl.style.transform = ''; dl.style.opacity = '0'; dl.style.display = 'none'; }
+      } else {
+        g.style.transform = 'translateY(' + amt + 'px)';
+        g.style.filter = 'drop-shadow(0 ' + (Math.abs(amt)*2) + 'px ' + (Math.abs(amt)*2.5) + 'px rgba(0,0,0,.44)) brightness(1.09)';
+        if(dl) {
+          dl.style.display = 'block';
+          dl.style.transform = 'translateY(' + (-amt) + 'px)';
+          dl.style.opacity = '1';
+        }
+      }
+    }
+
+    // Tooltip
+    function showTip(e, g) {
+      if(!tip) return;
+      if(tr) tr.textContent = g.dataset.name;
+      if(tpn) tpn.textContent = g.dataset.party;
+      if(tpd) tpd.style.background = g.dataset.color;
+      if(ts2) ts2.textContent = '22대 총선 · ' + g.dataset.seats + ' (' + g.dataset.rate + ')';
+      var x = e.clientX + 16, y = e.clientY - 10;
+      if(x + 170 > window.innerWidth) x = e.clientX - 175;
+      if(y + 105 > window.innerHeight) y = e.clientY - 115;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+      tip.style.display = 'block';
+    }
+    function hideTip() { if(tip) tip.style.display = 'none'; }
+
+    // Events — SVG 레벨에서 통합 관리 (g 레벨 mouseleave 버블링 문제 회피)
+    svg.addEventListener('mousemove', function(e) {
+      var g = e.target.closest('.rg');
+      if(g) {
+        if(hovered !== g) {
+          if(hovered && hovered !== selected) lift(hovered, 0);
+          if(g !== selected) { lift(g, -9); toFront(g); }
+          hovered = g;
+        }
+        showTip(e, g);
+      } else {
+        // 지역 밖 — 즉시 숨김
+        if(hovered && hovered !== selected) { lift(hovered, 0); }
+        hovered = null;
+        hideTip();
+      }
+    });
+
+    svg.addEventListener('mouseleave', function() {
+      if(hovered && hovered !== selected) { lift(hovered, 0); }
+      hovered = null;
+      hideTip();
+    });
+
+    svg.addEventListener('click', function(e) {
+      var g = e.target.closest('.rg');
+      if(g) {
+        e.stopPropagation();
+        if(selected && selected !== g) { lift(selected, 0); selected = null; }
+        if(selected === g) { lift(g, 0); selected = null; hideTip(); }
+        else { lift(g, -14); selected = g; toFront(g); showTip(e, g); }
+      } else {
+        if(selected) { lift(selected, 0); selected = null; }
+        hideTip();
+      }
+    });
+
+    document.addEventListener('click', function() {
+      if(selected) { lift(selected, 0); selected = null; }
+      hideTip();
+    });
+
+    var mapWrap = qs('hr');
+    if(mapWrap) {
+      mapWrap.addEventListener('mouseleave', function() {
+        if(hovered && hovered !== selected) { lift(hovered, 0); }
+        hovered = null;
+        hideTip();
+      });
+    }
+  }
+
+  // ── SCROLL DOTS ──────────────────────────────────────────
+  function initDots() {
+    var sw = qs('sw');
+    var dotEls = qsa('.dot');
+    var sections = ['hero','p1','p2','p3'];
+    if(!sw) return;
+
+    function setActive(idx) {
+      dotEls.forEach(function(d,i){ d.classList.toggle('on', i===idx); });
+    }
+
+    dotEls.forEach(function(dot, i) {
+      dot.addEventListener('click', function() {
+        var sec = qs(sections[i]);
+        if(sec) sec.scrollIntoView({ behavior:'smooth' });
+      });
+    });
+
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if(e.isIntersecting) {
+          var idx = sections.indexOf(e.target.id);
+          if(idx >= 0) setActive(idx);
+        }
+      });
+    }, { root: sw, threshold: 0.5 });
+
+    sections.forEach(function(id) {
+      var el = qs(id);
+      if(el) obs.observe(el);
+    });
+  }
+
+  // ── DECO BUILDERS ────────────────────────────────────────
+  function makeDotGrid(cols, rows, baseAlpha, accentCol) {
+    var dots = [];
+    var size = 5, gapX = 18, gapY = 18;
+    var W = cols * gapX, H = rows * gapY;
+    for(var r=0; r<rows; r++) {
+      for(var c=0; c<cols; c++) {
+        var x = c * gapX + size;
+        var y = r * gapY + size;
+        var isAccent = (c === accentCol || c === accentCol-1);
+        var alpha = isAccent ? (baseAlpha + 0.25) : (baseAlpha - c*0.018);
+        alpha = Math.max(0.06, Math.min(0.55, alpha));
+        dots.push('<circle cx="'+x+'" cy="'+y+'" r="'+size/2+'" fill="rgba(74,63,143,'+alpha.toFixed(2)+')"/>');
+      }
+    }
+    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;max-width:320px;max-height:280px;">'+dots.join('')+'</svg>';
+  }
+
+  function buildDecos() {
+
+    // DECO 1: 의원 프로필 — 세로 바 그리드 (출석률)
+    var d1 = qs('deco1');
+    if(d1) {
+      d1.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
+      var bars = [58,72,81,65,92,78,88,69,95,74,83,61];
+      var svgW = 300, svgH = 260;
+      var barW = 16, gap = 8;
+      var total = bars.length * (barW+gap) - gap;
+      var startX = (svgW - total) / 2;
+      var maxH = svgH * 0.78;
+      var html = bars.map(function(h, i) {
+        var bh = Math.round(h/100 * maxH);
+        var x = startX + i*(barW+gap);
+        var alpha = 0.12 + (h/100)*0.55;
+        return '<rect x="'+x+'" y="'+(svgH-bh-20)+'" width="'+barW+'" height="'+bh+'" rx="2" fill="rgba(74,63,143,'+alpha.toFixed(2)+')"/>';
+      }).join('');
+      var base = '<line x1="'+startX+'" y1="'+(svgH-20)+'" x2="'+(startX+total)+'" y2="'+(svgH-20)+'" stroke="rgba(26,25,22,0.1)" stroke-width="0.8"/>';
+      var lbl = '<text x="'+(svgW/2)+'" y="'+(svgH-4)+'" font-size="9" fill="rgba(26,25,22,0.3)" text-anchor="middle" font-family="Noto Sans KR,sans-serif" letter-spacing="0.08em">의원별 본회의 출석률</text>';
+      var cap1 = '<div style="display:flex;gap:28px;margin-top:16px;">'
+        + [{n:'300',l:'현역 의원'},{n:'94.2%',l:'평균 출석률'},{n:'12명',l:'출석 미달'}].map(function(c){
+          return '<div style="text-align:center;">'
+            +'<div style="font-family:Noto Serif KR,serif;font-size:20px;font-weight:400;color:rgba(26,25,22,0.75);letter-spacing:-0.02em;">'+c.n+'</div>'
+            +'<div style="font-size:10px;color:rgba(26,25,22,0.35);margin-top:3px;letter-spacing:0.06em;">'+c.l+'</div>'
+            +'</div>';
+        }).join('') + '</div>';
+      d1.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+      d1.innerHTML = '<svg viewBox="0 0 '+svgW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg">'+html+base+lbl+'</svg>' + cap1;
+    }
+
+    // DECO 2: 법안 추적 — 흐르는 웨이브 + 페르소나 태그
+    var d2 = qs('deco2');
+    if(d2) {
+      d2.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
+      var svgW=300, svgH=260;
+      var waves = [];
+      for(var i=0; i<7; i++) {
+        var pts=[];
+        var baseY = 80 + i*22;
+        var amp = 14 - i;
+        for(var x=0; x<=svgW; x+=6) {
+          var y = baseY + Math.sin((x/svgW)*Math.PI*2.5 + i*0.7)*amp;
+          pts.push(x.toFixed(0)+','+y.toFixed(1));
+        }
+        var a = 0.06 + i*0.055;
+        var sw = (0.8 + i*0.25).toFixed(1);
+        waves.push('<polyline points="'+pts.join(' ')+'" fill="none" stroke="rgba(74,63,143,'+a.toFixed(2)+')" stroke-width="'+sw+'"/>');
+      }
+      var tags = [
+        {x:30,y:28,w:58,t:'직장인'},
+        {x:118,y:18,w:68,t:'자영업자'},
+        {x:218,y:28,w:54,t:'학생'},
+      ];
+      var tagSvg = tags.map(function(tg) {
+        return '<rect x="'+tg.x+'" y="'+tg.y+'" width="'+tg.w+'" height="20" rx="10" fill="rgba(74,63,143,0.09)" stroke="rgba(74,63,143,0.25)" stroke-width="0.7"/>'
+          +'<text x="'+(tg.x+tg.w/2)+'" y="'+(tg.y+13.5)+'" font-size="9" fill="rgba(74,63,143,0.75)" text-anchor="middle" font-family="Noto Sans KR,sans-serif">'+tg.t+'</text>';
+      }).join('');
+      var cap2 = '<div style="display:flex;gap:28px;margin-top:16px;">'
+        + [{n:'17,241',l:'발의 법안'},{n:'3종',l:'페르소나 해석'},{n:'AI',l:'자동 요약'}].map(function(c){
+          return '<div style="text-align:center;">'
+            +'<div style="font-family:Noto Serif KR,serif;font-size:20px;font-weight:400;color:rgba(26,25,22,0.75);letter-spacing:-0.02em;">'+c.n+'</div>'
+            +'<div style="font-size:10px;color:rgba(26,25,22,0.35);margin-top:3px;letter-spacing:0.06em;">'+c.l+'</div>'
+            +'</div>';
+        }).join('') + '</div>';
+      d2.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+      d2.innerHTML = '<svg viewBox="0 0 '+svgW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg">'+tagSvg+waves.join('')+'</svg>' + cap2;
+    }
+
+    // DECO 3: 표결 기록 — 도트 그리드 + 캡션 (가운데 정렬)
+    var d3 = qs('deco3');
+    if(d3) {
+      d3.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;';
+      var cols=10, rows=8, dotR=2.5, gapX=18, gapY=18;
+      var svgW=cols*gapX, svgH=rows*gapY;
+      var dots=[];
+      for(var r=0;r<rows;r++){
+        for(var c=0;c<cols;c++){
+          var x=c*gapX+gapX/2, y=r*gapY+gapY/2;
+          var distFromCenter = Math.sqrt(Math.pow(c-(cols/2-0.5),2)+Math.pow(r-(rows/2-0.5),2));
+          var alpha = Math.max(0.07, 0.52 - distFromCenter*0.045);
+          dots.push('<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+dotR+'" fill="rgba(74,63,143,'+alpha.toFixed(2)+')"/>');
+        }
+      }
+      var gridSvg = '<svg viewBox="0 0 '+svgW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg" style="width:180px;height:auto;">'+dots.join('')+'</svg>';
+
+      // 캡션 3개
+      var captions = [
+        {n:'4,812', l:'표결 기록'},
+        {n:'68%', l:'평균 가결률'},
+        {n:'14건', l:'이번 주 표결'},
+      ];
+      var capHtml = '<div style="display:flex;gap:28px;margin-top:4px;">'
+        + captions.map(function(c){
+          return '<div style="text-align:center;">'
+            +'<div style="font-family:Noto Serif KR,serif;font-size:20px;font-weight:400;color:rgba(26,25,22,0.75);letter-spacing:-0.02em;">'+c.n+'</div>'
+            +'<div style="font-size:10px;color:rgba(26,25,22,0.35);margin-top:3px;letter-spacing:0.06em;">'+c.l+'</div>'
+            +'</div>';
+        }).join('') + '</div>';
+
+      d3.innerHTML = gridSvg + capHtml;
+    }
+  }
+
+  // ── BOOT ─────────────────────────────────────────────────
+  runLoader(function() {
+    showUI();
+    initMap();
+    initDots();
+    buildDecos();
+  });
+
+})();
+</script>
+</body>
+</html>
