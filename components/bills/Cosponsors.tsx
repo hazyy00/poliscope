@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 
-interface Cosponsor {
+export interface Cosponsor {
   member_id: string
   members: {
     name: string

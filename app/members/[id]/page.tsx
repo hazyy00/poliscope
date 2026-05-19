@@ -1,12 +1,20 @@
 import { createServerClient } from '@/lib/supabase'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { VotingRecord } from '@/components/members/VotingRecord'
+import { VotingRecord, type VoteRow } from '@/components/members/VotingRecord'
 import { AttendanceChart } from '@/components/members/AttendanceChart'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { cache } from 'react'
+
+const MEMBER_COLUMNS = 'id, name, party, district, is_pr, photo_url, committee' as const
+
+const getMember = cache(async (id: string) => {
+  const supabase = createServerClient()
+  return supabase.from('members').select(MEMBER_COLUMNS).eq('id', id).single()
+})
 
 interface Props {
   params: Promise<{ id: string }>
@@ -15,8 +23,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const supabase = createServerClient()
-  const { data } = await supabase.from('members').select('name, party, district').eq('id', id).single()
+  const { data } = await getMember(id)
   if (!data) return { title: '의원 — PoliScope' }
   return {
     title: `${data.name} (${data.party ?? '무소속'}) — PoliScope`,
@@ -35,7 +42,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
   const supabase = createServerClient()
 
   const [memberRes, billsRes, votesRes, attendanceRes] = await Promise.all([
-    supabase.from('members').select('*').eq('id', id).single(),
+    getMember(id),
     supabase
       .from('bills')
       .select('id, title, status, proposed_at, committee')
@@ -199,7 +206,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
         )}
 
         {tab === 'votes' && (
-          <VotingRecord votes={votes as any} />
+          <VotingRecord votes={votes as unknown as VoteRow[]} />
         )}
 
         {tab === 'attendance' && (

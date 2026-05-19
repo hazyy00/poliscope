@@ -155,3 +155,16 @@ CREATE POLICY "public read members"      ON members      FOR SELECT USING (true)
 CREATE POLICY "public read bills"        ON bills        FOR SELECT USING (NOT is_hidden);
 CREATE POLICY "public read votes"        ON votes        FOR SELECT USING (true);
 CREATE POLICY "public read member_votes" ON member_votes FOR SELECT USING (true);
+
+-- ── 나머지 테이블 RLS ─────────────────────────────────────────
+-- attendance: 공개 읽기 허용 (개인정보 없음)
+ALTER TABLE attendance    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bill_cosponsors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public read attendance"       ON attendance       FOR SELECT USING (true);
+CREATE POLICY "public read bill_cosponsors"  ON bill_cosponsors  FOR SELECT USING (true);
+
+-- subscribers: 공개 읽기 금지 (이메일 주소 보호)
+-- bill_reports: 공개 읽기 금지 (신고 내역 보호)
+ALTER TABLE subscribers  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bill_reports ENABLE ROW LEVEL SECURITY;
+-- SELECT 정책 없음 = anon 키로 조회 불가, 서비스 롤만 접근 가능

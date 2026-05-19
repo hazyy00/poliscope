@@ -1,6 +1,28 @@
 import { NextResponse } from 'next/server'
+import { Redis } from '@upstash/redis'
+
+const RATE_LIMIT = 5      // 요청 허용 횟수
+const WINDOW_SEC = 60     // 윈도우 (초)
+
+function getRedis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+  return new Redis({ url, token })
+}
 
 export async function POST(req: Request) {
+  const redis = getRedis()
+  if (redis) {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    const key = `subscribe:${ip}`
+    const count = await redis.incr(key)
+    if (count === 1) await redis.expire(key, WINDOW_SEC)
+    if (count > RATE_LIMIT) {
+      return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 })
+    }
+  }
+
   let email: string
   try {
     const body = await req.json()

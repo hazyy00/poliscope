@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
-interface VoteRow {
+export interface VoteRow {
   stance: string
   vote_id: string
   votes: { id: string; title: string; voted_at: string | null; result: string | null } | null

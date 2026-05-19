@@ -141,7 +141,7 @@ export default async function MembersPage({ searchParams }: Props) {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
               {members.map(m => (
-                <MemberCard key={m.id} {...(m as any)} />
+                <MemberCard key={m.id} {...m} />
               ))}
             </div>
           </>

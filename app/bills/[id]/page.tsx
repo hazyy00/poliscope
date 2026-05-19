@@ -2,13 +2,33 @@ import { createServerClient } from '@/lib/supabase'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { AISummary } from '@/components/bills/AISummary'
-import { Cosponsors } from '@/components/bills/Cosponsors'
+import { Cosponsors, type Cosponsor } from '@/components/bills/Cosponsors'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import type { AiSummaryJson } from '@/lib/types'
 import { formatDate } from '@/lib/utils'
+import { cache } from 'react'
+
+type Proposer = {
+  id: string
+  name: string
+  party: string | null
+  photo_url: string | null
+  district: string | null
+  is_pr: boolean
+}
+
+const getBill = cache(async (id: string) => {
+  const supabase = createServerClient()
+  return supabase
+    .from('bills')
+    .select('*, members!bills_proposer_id_fkey(id, name, party, photo_url, district, is_pr)')
+    .eq('id', id)
+    .eq('is_hidden', false)
+    .single()
+})
 
 interface Props {
   params: Promise<{ id: string }>
@@ -16,8 +36,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const supabase = createServerClient()
-  const { data } = await supabase.from('bills').select('title, status').eq('id', id).single()
+  const { data } = await getBill(id)
   if (!data) return { title: '법안 — PoliScope' }
   return {
     title: `${data.title} — PoliScope`,
@@ -31,11 +50,7 @@ export default async function BillDetailPage({ params }: Props) {
   const supabase = createServerClient()
 
   const [billRes, cosponsorsRes, voteRes] = await Promise.all([
-    supabase
-      .from('bills')
-      .select('*, members!bills_proposer_id_fkey(id, name, party, photo_url, district, is_pr)')
-      .eq('id', id)
-      .single(),
+    getBill(id),
     supabase
       .from('bill_cosponsors')
       .select('member_id, members(name, party, photo_url)')
@@ -51,7 +66,7 @@ export default async function BillDetailPage({ params }: Props) {
 
   if (!billRes.data) notFound()
   const bill = billRes.data
-  const proposer = Array.isArray(bill.members) ? bill.members[0] : bill.members
+  const proposer: Proposer | null = Array.isArray(bill.members) ? (bill.members[0] ?? null) : bill.members
   const cosponsors = cosponsorsRes.data ?? []
   const vote = voteRes.data
 
@@ -158,19 +173,19 @@ export default async function BillDetailPage({ params }: Props) {
                 <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--t3)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   대표발의
                 </h3>
-                <Link href={`/members/${(proposer as any).id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+                <Link href={`/members/${proposer.id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
                   <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: 'var(--ivd)', flexShrink: 0, position: 'relative' }}>
-                    {(proposer as any).photo_url ? (
-                      <Image src={(proposer as any).photo_url} alt={(proposer as any).name} fill style={{ objectFit: 'cover' }} sizes="44px" />
+                    {proposer.photo_url ? (
+                      <Image src={proposer.photo_url} alt={proposer.name} fill style={{ objectFit: 'cover' }} sizes="44px" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--t3)' }}>
-                        {(proposer as any).name?.slice(0, 1)}
+                        {proposer.name?.slice(0, 1)}
                       </div>
                     )}
                   </div>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--t1)' }}>{(proposer as any).name}</div>
-                    <PartyBadge party={(proposer as any).party} size="sm" />
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--t1)' }}>{proposer.name}</div>
+                    <PartyBadge party={proposer.party} size="sm" />
                   </div>
                 </Link>
               </section>
@@ -181,7 +196,7 @@ export default async function BillDetailPage({ params }: Props) {
               <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--t3)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 공동발의 ({cosponsors.length}명)
               </h3>
-              <Cosponsors cosponsors={cosponsors as any} />
+              <Cosponsors cosponsors={cosponsors as unknown as Cosponsor[]} />
             </section>
           </div>
         </div>

@@ -80,9 +80,9 @@ export default async function BillsPage({ searchParams }: Props) {
                   status={bill.status ?? '계류'}
                   committee={bill.committee}
                   proposed_at={bill.proposed_at}
-                  summary_short={(bill as any).summary_short}
-                  proposer_name={(proposer as any)?.name ?? null}
-                  proposer_party={(proposer as any)?.party ?? null}
+                  summary_short={bill.summary_short}
+                  proposer_name={proposer?.name ?? null}
+                  proposer_party={proposer?.party ?? null}
                 />
               )
             })}
