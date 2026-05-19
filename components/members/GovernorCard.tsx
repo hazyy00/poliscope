@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import type { Governor, RegionData } from '@/lib/regions'
 
@@ -26,11 +27,15 @@ export function GovernorCard({ region }: Props) {
       }}
       className="hover-card"
     >
-      {/* Photo placeholder */}
+      {/* Photo */}
       <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 40, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif), serif' }}>
-          {initials}
-        </span>
+        {governor.photo_url ? (
+          <Image src={governor.photo_url} alt={governor.name} fill unoptimized style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
+        ) : (
+          <span style={{ fontSize: 40, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif), serif' }}>
+            {initials}
+          </span>
+        )}
         {/* 시장/도지사 badge */}
         <span style={{
           position: 'absolute', top: 8, right: 8,

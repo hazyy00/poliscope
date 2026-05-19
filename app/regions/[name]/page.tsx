@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
 import { REGIONS_DATA } from '@/lib/regions'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { MemberCard } from '@/components/members/MemberCard'
+import { DistrictMap } from '@/components/map/DistrictMap'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -37,7 +39,7 @@ export default async function RegionPage({ params }: Props) {
     .order('district')
 
   const [won, total] = regionData.rate.split('/').map(Number)
-  const wonPct = Math.round((won / total) * 100)
+  const wonPct = total > 0 ? Math.round((won / total) * 100) : 0
 
   // Compute per-party seat counts from member list
   const partyCounts: Record<string, number> = {}
@@ -75,7 +77,15 @@ export default async function RegionPage({ params }: Props) {
           </p>
         </div>
 
+        {/* Northern province notice */}
+        {regionData.is_northern && (
+          <div style={{ marginBottom: 40, padding: '16px 20px', background: 'var(--ivd)', borderRadius: 10, fontSize: 13, color: 'var(--t3)', lineHeight: 1.7 }}>
+            이북5도는 국회 지역구가 없습니다. 도지사는 대통령이 임명하는 차관급 정무직입니다.
+          </div>
+        )}
+
         {/* Party breakdown */}
+        {!regionData.is_northern && (
         <div style={{ marginBottom: 52, padding: '20px 24px', background: 'white', borderRadius: 12, border: '1px solid var(--bd)' }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', marginBottom: 14, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             의석 분포
@@ -111,44 +121,65 @@ export default async function RegionPage({ params }: Props) {
             )}
           </div>
         </div>
+        )}
+
+        {/* District map */}
+        <div style={{ marginBottom: 52, padding: '20px 24px', background: 'white', borderRadius: 12, border: '1px solid var(--bd)' }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', marginBottom: 16, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            지역구 지도
+          </div>
+          <DistrictMap
+            regionName={decodedName}
+            regionShort={regionData.short}
+            members={(members ?? []).map(m => ({
+              id: m.id,
+              name: m.name,
+              party: m.party,
+              district: m.district,
+            }))}
+          />
+        </div>
 
         {/* Governor / Mayor */}
         <div style={{ marginBottom: 52 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', margin: '0 0 16px' }}>
             {regionData.governor.title}
           </h2>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 20,
-            padding: '20px 24px',
-            background: 'white', borderRadius: 12, border: '1px solid var(--bd)',
-            maxWidth: 420,
-          }}>
-            {/* Avatar */}
+          <div style={{ width: 180 }}>
             <div style={{
-              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-              background: `${regionData.governor.party === '더불어민주당' ? '#3D6DB5' : regionData.governor.party === '국민의힘' ? '#C0392B' : '#888888'}22`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, fontWeight: 400, color: 'var(--t2)',
-              fontFamily: 'var(--font-serif), serif',
+              display: 'flex', flexDirection: 'column',
+              background: 'white', border: '1px solid var(--bd)',
+              borderRadius: 10, overflow: 'hidden',
             }}>
-              {regionData.governor.name[0]}
-            </div>
-            {/* Info */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--t1)', fontFamily: 'var(--font-serif), serif' }}>
-                  {regionData.governor.name}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--t3)' }}>{regionData.governor.title}</span>
+              {/* Photo */}
+              <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
+                {regionData.governor.photo_url ? (
+                  <Image
+                    src={regionData.governor.photo_url}
+                    alt={regionData.governor.name}
+                    fill
+                    unoptimized
+                    style={{ objectFit: 'cover', objectPosition: 'top' }}
+                    sizes="180px"
+                  />
+                ) : (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif), serif' }}>
+                    {regionData.governor.name[0]}
+                  </div>
+                )}
               </div>
-              <PartyBadge party={regionData.governor.party} size="sm" />
-              <span style={{ fontSize: 11, color: 'var(--t3)', marginTop: 2 }}>{regionData.governor.term}</span>
+              {/* Info */}
+              <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--t1)' }}>{regionData.governor.name}</div>
+                <PartyBadge party={regionData.governor.party} size="sm" />
+                <div style={{ fontSize: 12, color: 'var(--t3)' }}>{regionData.governor.term}</div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Member grid */}
-        <div style={{ marginBottom: 24 }}>
+        {!regionData.is_northern && <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 20 }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', margin: 0 }}>지역구 의원</h2>
             <span style={{ fontSize: 13, color: 'var(--t3)' }}>{members?.length ?? 0}명</span>
@@ -183,7 +214,7 @@ export default async function RegionPage({ params }: Props) {
               이 지역 지역구 의원 정보가 없습니다.
             </div>
           )}
-        </div>
+        </div>}
       </div>
     </main>
   )

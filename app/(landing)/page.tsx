@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { KoreaMap } from '@/components/map/KoreaMap'
+import { REGIONS_DATA } from '@/lib/regions'
 
 let introPlayed = false
 
@@ -166,6 +167,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [loaderOut, setLoaderOut] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [ibukHovered, setIbukHovered] = useState(false)
   const [navVisible, setNavVisible] = useState(false)
   const [activeSection, setActiveSection] = useState(0)
   const [dotsVisible, setDotsVisible] = useState(false)
@@ -316,7 +318,7 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 52px', height: 60,
         borderBottom: '.5px solid var(--bd)',
-        background: 'rgba(242,237,228,.9)', backdropFilter: 'blur(14px)',
+        background: 'color-mix(in srgb, var(--iv) 90%, transparent)', backdropFilter: 'blur(14px)',
         opacity: navVisible ? 1 : 0,
         transform: navVisible ? 'translateY(0)' : 'translateY(-8px)',
         transition: 'opacity .5s, transform .5s',
@@ -375,7 +377,7 @@ export default function LandingPage() {
             paddingTop: 60,
           }}
         >
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '0.9fr 1.4fr', alignItems: 'center', minHeight: 0 }}>
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '0.75fr 1.25fr', alignItems: 'center', minHeight: 0 }}>
             {/* LEFT */}
             <div style={{ padding: '0 40px 0 56px', display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)' }}>
@@ -420,6 +422,59 @@ export default function LandingPage() {
             {/* RIGHT — interactive Korea map */}
             <div style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
               <KoreaMap className="absolute inset-0" onRegionClick={handleRegionClick} />
+
+              {/* 이북5도위원회 panel */}
+              <div
+                onMouseEnter={() => setIbukHovered(true)}
+                onMouseLeave={() => setIbukHovered(false)}
+                style={{
+                  position: 'absolute', top: 16, right: 16,
+                  background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(16px)',
+                  borderRadius: 12, padding: '14px 16px',
+                  border: '0.5px solid rgba(26,25,22,0.1)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
+                  zIndex: 10, minWidth: 210,
+                  cursor: 'default',
+                }}
+              >
+                {/* Header: emblem + title */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {/* Korean Government Emblem */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/emblem-ibuk5do.png" alt="이북5도위원회 엠블럼" width={38} height={38} style={{ flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.42)', letterSpacing: '0.01em', marginBottom: 2 }}>행정안전부</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)', letterSpacing: '-0.01em' }}>이북5도위원회</div>
+                  </div>
+                </div>
+
+                {/* Province list — slides down on hover */}
+                <div style={{
+                  overflow: 'hidden',
+                  maxHeight: ibukHovered ? 300 : 0,
+                  opacity: ibukHovered ? 1 : 0,
+                  marginTop: ibukHovered ? 12 : 0,
+                  paddingTop: ibukHovered ? 12 : 0,
+                  borderTop: ibukHovered ? '0.5px solid rgba(26,25,22,0.08)' : '0.5px solid transparent',
+                  transition: 'max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease, padding-top 0.28s ease',
+                }}>
+                  {REGIONS_DATA.filter(r => r.is_northern).map((r, i, arr) => (
+                    <Link
+                      key={r.name}
+                      href={`/regions/${encodeURIComponent(r.name)}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+                        padding: '7px 0',
+                        borderBottom: i < arr.length - 1 ? '0.5px solid rgba(26,25,22,0.06)' : 'none',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <span style={{ fontSize: 12, color: 'var(--t1)', whiteSpace: 'nowrap' }}>{r.name}</span>
+                      <span style={{ fontSize: 11, color: 'var(--t3)', whiteSpace: 'nowrap' }}>{r.governor.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

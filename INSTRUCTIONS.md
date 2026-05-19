@@ -60,8 +60,11 @@
 | 의원 페이지 | `components/members/` → `app/members/` |
 | 법안 페이지 | `components/bills/` → `app/bills/` |
 | 지도 컴포넌트 | `components/map/KoreaMap.tsx` |
+| 지역구 지도 | `components/map/DistrictMap.tsx` (D3-geo, GeoJSON `/public/korea-electoral.json`) |
 | 지역 상세 페이지 | `lib/regions.ts` → `app/regions/[name]/page.tsx` |
 | 시장·도지사 데이터 | `lib/regions.ts` (REGIONS_DATA의 governor 필드, 민선 8기 정적 데이터) |
+| 이북5도위원회 | `lib/regions.ts` (is_northern: true 항목 5개) |
+| 사진 관리 | `scripts/migrate_photos.py`, `scripts/sync_photos.py` (Supabase Storage `photos` 버킷) |
 
 ---
 
@@ -72,7 +75,7 @@
 
 **도메인:** poliscope.kr  
 **디자인 레퍼런스:** `/design/poliscope.html` (완성된 목업)  
-**색상 시스템:** 아이보리 배경 `#F2EDE4`, 검정 `#0F0F0D`, 퍼플 액센트 `#4A3F8F`
+**색상 시스템:** 아이보리 배경 `#F7F5F2` (`--iv`), 어두운 배경 `#EDEAE4` (`--ivd`), 검정 `#0F0F0D`, 퍼플 액센트 `#4A3F8F`
 
 ---
 
@@ -92,7 +95,7 @@
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Charts:** Recharts
-- **Map:** D3.js + TopoJSON (한국 행정구역)
+- **Map:** D3.js + GeoJSON (`/public/korea-electoral.json`, 선거구별 의원 색상 매핑)
 - **Font:** Noto Serif KR, Noto Sans KR, IM Fell English (Google Fonts)
 
 ### Backend
@@ -140,11 +143,12 @@ poliscope/
 │       └── subscribe/route.ts    # 뉴스레터 구독
 ├── components/
 │   ├── map/
-│   │   └── KoreaMap.tsx          # SVG 한국 지도 (17개 시·도, 클릭 시 지역 상세로 이동)
+│   │   ├── KoreaMap.tsx          # SVG 한국 지도 (17개 시·도, 클릭 시 지역 상세로 이동)
+│   │   └── DistrictMap.tsx       # D3-geo 지역구 지도 (선거구별 의원 색상, 호버 툴팁)
 │   ├── members/
-│   │   ├── MemberCard.tsx        # 의원 카드 (→ /members/[id])
+│   │   ├── MemberCard.tsx        # 의원 카드 (photo_url null이면 assembly.go.kr/{id}.jpg 폴백)
 │   │   ├── MemberSearch.tsx      # 이름·정당·지역 필터 (router.replace로 히스토리 최소화)
-│   │   ├── GovernorCard.tsx      # 시장·도지사 카드 (→ /regions/[name])
+│   │   ├── GovernorCard.tsx      # 시장·도지사 세로형 초상화 카드 (→ /regions/[name])
 │   │   ├── AttendanceChart.tsx
 │   │   └── VotingRecord.tsx
 │   ├── bills/
@@ -156,17 +160,24 @@ poliscope/
 │       ├── StatusBadge.tsx
 │       └── Pagination.tsx
 ├── lib/
-│   ├── regions.ts                # 17개 시·도 정적 데이터
+│   ├── regions.ts                # 17개 시·도 + 이북5도위원회 5개 정적 데이터
 │   │                             #   - 22대 총선 의석 (party, seats, rate, color)
-│   │                             #   - 민선 8기 시장·도지사 (name, title, party, term)
+│   │                             #   - 민선 8기 시장·도지사 (name, title, party, term, photo_url)
+│   │                             #   - is_northern: true → 이북5도 (국회 지역구 없음, 대통령 임명)
+│   │                             #   - 도지사 사진: Supabase Storage photos 버킷 (gov_*.jpg/png)
 │   ├── supabase.ts               # DB 클라이언트
 │   ├── types.ts                  # Member, Bill, Vote 타입
 │   ├── constants.ts              # PARTIES, BILL_STATUSES
 │   └── utils.ts                  # getPartyColor, formatDate 등
+├── public/
+│   ├── korea-electoral.json      # 선거구 GeoJSON (DistrictMap용)
+│   └── emblem-ibuk5do.png        # 이북5도위원회 행정안전부 엠블럼
 ├── scripts/                      # 데이터 수집 (Python)
-│   ├── collect_members.py
+│   ├── collect_members.py        # 의원 수집 (photo_url 없으면 assembly.go.kr URL 자동 생성)
 │   ├── collect_bills.py
 │   ├── collect_votes.py
+│   ├── migrate_photos.py         # assembly.go.kr → Supabase Storage 사진 마이그레이션
+│   ├── sync_photos.py            # 누락 사진 재동기화
 │   ├── generate_summaries.py
 │   └── validate_data.py
 ├── design/

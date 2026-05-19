@@ -29,14 +29,16 @@ export default async function MembersPage({ searchParams }: Props) {
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
   const offset = (page - 1) * PAGE_SIZE
 
-  // Filter governors from static data
-  const filteredGovernors = REGIONS_DATA.filter(r => {
+  // Filter governors from static data (split into southern/northern)
+  const filterRegion = (r: typeof REGIONS_DATA[0]) => {
     const gov = r.governor
     if (sp.q && !gov.name.includes(sp.q)) return false
     if (sp.party && gov.party !== sp.party) return false
     if (sp.district && !r.name.includes(sp.district) && !r.short.includes(sp.district)) return false
     return true
-  })
+  }
+  const filteredGovernors = REGIONS_DATA.filter(r => !r.is_northern && filterRegion(r))
+  const filteredNorthern = REGIONS_DATA.filter(r => r.is_northern && filterRegion(r))
 
   let query = supabase
     .from('members')
@@ -53,6 +55,9 @@ export default async function MembersPage({ searchParams }: Props) {
 
   const hasFilters = !!(sp.q || sp.party || sp.district)
   const showGovernors = !hasFilters || filteredGovernors.length > 0
+  const showNorthern = !hasFilters || filteredNorthern.length > 0
+
+  const totalCount = (count ?? 0) + (showGovernors ? filteredGovernors.length : 0) + (showNorthern ? filteredNorthern.length : 0)
 
   function buildHref(p: number) {
     const usp = new URLSearchParams()
@@ -63,8 +68,6 @@ export default async function MembersPage({ searchParams }: Props) {
     const qs = usp.toString()
     return `/members${qs ? `?${qs}` : ''}`
   }
-
-  const totalCount = (count ?? 0) + (showGovernors ? filteredGovernors.length : 0)
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 60px' }}>
@@ -102,6 +105,23 @@ export default async function MembersPage({ searchParams }: Props) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
               {filteredGovernors.map(r => (
+                <GovernorCard key={r.name} region={r} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 이북5도위원회 */}
+        {showNorthern && filteredNorthern.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+              이북5도위원회
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--t3)', marginBottom: 16 }}>
+              황해도 · 평안남도 · 평안북도 · 함경남도 · 함경북도 도지사 (차관급 정무직)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
+              {filteredNorthern.map(r => (
                 <GovernorCard key={r.name} region={r} />
               ))}
             </div>

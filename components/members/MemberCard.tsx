@@ -6,6 +6,8 @@ import type { Member } from '@/lib/types'
 type Props = Pick<Member, 'id' | 'name' | 'party' | 'district' | 'is_pr' | 'photo_url' | 'committee'>
 
 export function MemberCard({ id, name, party, district, is_pr, photo_url, committee }: Props) {
+  const resolvedPhoto = photo_url ?? `https://www.assembly.go.kr/static/portal/img/openassm/${id}.jpg`
+
   return (
     <Link
       href={`/members/${id}`}
@@ -24,13 +26,7 @@ export function MemberCard({ id, name, party, district, is_pr, photo_url, commit
     >
       {/* Photo */}
       <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
-        {photo_url ? (
-          <Image src={photo_url} alt={name} fill style={{ objectFit: 'cover' }} sizes="200px" />
-        ) : (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif)' }}>
-            {name.slice(0, 1)}
-          </div>
-        )}
+        <Image src={resolvedPhoto} alt={name} fill unoptimized style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
       </div>
 
       {/* Info */}
