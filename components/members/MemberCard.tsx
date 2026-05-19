@@ -26,7 +26,7 @@ export function MemberCard({ id, name, party, district, is_pr, photo_url, commit
     >
       {/* Photo */}
       <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
-        <Image src={resolvedPhoto} alt={name} fill unoptimized style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
+        <Image src={resolvedPhoto} alt={name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
       </div>
 
       {/* Info */}
