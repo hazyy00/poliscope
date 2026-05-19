@@ -205,6 +205,12 @@ poliscope/
 
 ---
 
+## Acknowledgements
+
+Inspired by [wooder2050/congressman](https://github.com/wooder2050/congressman).
+
+---
+
 ## 법적 고지
 
 이 서비스의 데이터는 국회 공공데이터 API를 기반으로 하며 참고용입니다. 법적 판단의 근거로 사용하지 마세요. 원문은 항상 [의안정보시스템](https://likms.assembly.go.kr)에서 확인하세요.
