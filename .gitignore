@@ -38,3 +38,12 @@ Thumbs.db
 # logs
 *.log
 npm-debug.log*
+
+# private / internal
+CLAUDE.md
+INSTRUCTIONS.md
+design/
+schema.sql
+scripts/
+requirements.txt
+.github/
