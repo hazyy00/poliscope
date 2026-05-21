@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { PartyBadge } from '@/components/ui/PartyBadge'
@@ -7,6 +10,7 @@ type Props = Pick<Member, 'id' | 'name' | 'party' | 'district' | 'is_pr' | 'phot
 
 export function MemberCard({ id, name, party, district, is_pr, photo_url, committee }: Props) {
   const resolvedPhoto = photo_url ?? `https://www.assembly.go.kr/static/portal/img/openassm/${id}.jpg`
+  const [imgError, setImgError] = useState(false)
 
   return (
     <Link
@@ -26,7 +30,20 @@ export function MemberCard({ id, name, party, district, is_pr, photo_url, commit
     >
       {/* Photo */}
       <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
-        <Image src={resolvedPhoto} alt={name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
+        {!imgError ? (
+          <Image
+            src={resolvedPhoto}
+            alt={name}
+            fill
+            style={{ objectFit: 'cover', objectPosition: 'top' }}
+            sizes="200px"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif), serif' }}>
+            {name[0]}
+          </div>
+        )}
       </div>
 
       {/* Info */}

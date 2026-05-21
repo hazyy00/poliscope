@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
 import { REGIONS_DATA } from '@/lib/regions'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { MemberCard } from '@/components/members/MemberCard'
+import { MemberPhoto } from '@/components/members/MemberPhoto'
 import { DistrictMap } from '@/components/map/DistrictMap'
 
 interface Props {
@@ -153,20 +153,7 @@ export default async function RegionPage({ params }: Props) {
             }}>
               {/* Photo */}
               <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
-                {regionData.governor.photo_url ? (
-                  <Image
-                    src={regionData.governor.photo_url}
-                    alt={regionData.governor.name}
-                    fill
-                    unoptimized
-                    style={{ objectFit: 'cover', objectPosition: 'top' }}
-                    sizes="180px"
-                  />
-                ) : (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 300, color: 'var(--t3)', fontFamily: 'var(--font-serif), serif' }}>
-                    {regionData.governor.name[0]}
-                  </div>
-                )}
+                <MemberPhoto src={regionData.governor.photo_url} name={regionData.governor.name} sizes="180px" />
               </div>
               {/* Info */}
               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>

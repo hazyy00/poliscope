@@ -3,9 +3,9 @@ import { PartyBadge } from '@/components/ui/PartyBadge'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { VotingRecord, type VoteRow } from '@/components/members/VotingRecord'
 import { AttendanceChart } from '@/components/members/AttendanceChart'
+import { MemberPhoto } from '@/components/members/MemberPhoto'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Metadata } from 'next'
 import { cache } from 'react'
 
@@ -108,13 +108,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
         {/* Profile header */}
         <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 32, marginBottom: 40 }}>
           <div style={{ borderRadius: 12, overflow: 'hidden', background: 'var(--ivd)', aspectRatio: '3/4', position: 'relative' }}>
-            {member.photo_url ? (
-              <Image src={member.photo_url} alt={member.name} fill style={{ objectFit: 'cover' }} sizes="200px" />
-            ) : (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, color: 'var(--t3)', fontFamily: 'var(--font-serif)' }}>
-                {member.name.slice(0, 1)}
-              </div>
-            )}
+            <MemberPhoto src={member.photo_url} name={member.name} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 8 }}>

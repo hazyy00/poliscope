@@ -36,7 +36,6 @@ class Member(BaseModel):
         populate_by_name = True
 
     def to_db(self) -> dict:
-        photo = self.photo_url or f"https://www.assembly.go.kr/static/portal/img/openassm/{self.id}.jpg"
         return {
             "id": self.id,
             "name": self.name,
@@ -44,7 +43,6 @@ class Member(BaseModel):
             "party": self.party,
             "district": self.district,
             "is_pr": self.is_pr,
-            "photo_url": photo,
             "term": self.term,
         }
 
