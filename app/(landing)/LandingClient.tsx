@@ -6,13 +6,7 @@ import Link from 'next/link'
 import { KoreaMap } from '@/components/map/KoreaMap'
 import { REGIONS_DATA } from '@/lib/regions'
 
-const INTRO_KEY = 'introPlayed'
-function getIntroPlayed() {
-  return typeof window !== 'undefined' && sessionStorage.getItem(INTRO_KEY) === '1'
-}
-function markIntroPlayed() {
-  sessionStorage.setItem(INTRO_KEY, '1')
-}
+let introPlayed = false
 
 interface Stats {
   bills: number
@@ -191,7 +185,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
   }
 
   useLayoutEffect(() => {
-    if (getIntroPlayed()) {
+    if (introPlayed) {
       setLoaderOut(true)
       setLoaded(true)
       setNavVisible(true)
@@ -200,7 +194,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
   }, [])
 
   useEffect(() => {
-    if (getIntroPlayed()) return
+    if (introPlayed) return
 
     const l1 = document.getElementById('l1')
     const l2 = document.getElementById('l2')
@@ -228,7 +222,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
       const t6 = setTimeout(() => {
         setLoaded(true)
         setNavVisible(true)
-        markIntroPlayed()
+        introPlayed = true
         setTimeout(() => setDotsVisible(true), 600)
       }, 700)
       timersRef.current.push(t6)
