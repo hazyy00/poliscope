@@ -1,0 +1,151 @@
+import { NextResponse } from 'next/server'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+const ASSEMBLY_API_KEY = process.env.ASSEMBLY_API_KEY!
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const BASE_URL = 'https://open.assembly.go.kr/portal/openapi'
+
+const RESULT_MAP: Record<string, string> = {
+  '원안가결': '가결', '수정가결': '가결',
+  '부결': '부결', '폐기': '폐기', '무효': '무효',
+}
+const STANCE_MAP: Record<string, string> = {
+  '찬성': '찬성', '반대': '반대', '기권': '기권', '불참': '불참', '결석': '불참',
+}
+
+// Vercel cron secret 검증
+export async function GET(req: Request) {
+  const authHeader = req.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  // 어제 날짜
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const since = yesterday.toISOString().slice(0, 10).replace(/-/g, '')
+
+  try {
+    // 1. 표결 목록 수집
+    const votes = (await fetchVotes(since)).filter(Boolean) as NonNullable<Awaited<ReturnType<typeof fetchVotes>>[number]>[]
+    if (votes.length > 0) {
+      await upsertInBatches(supabase, 'votes', votes, 'id')
+    }
+
+    // 2. 의원별 표결 수집 (새로 추가된 vote_id만)
+    const voteIds = votes.map(v => v!.id)
+    if (voteIds.length > 0) {
+      const memberRows = await fetchMemberVotes(voteIds)
+      if (memberRows.length > 0) {
+        const validIds = await getValidMemberIds(supabase)
+        const filtered = memberRows.filter(r => validIds.has(r.member_id))
+        if (filtered.length > 0) {
+          await upsertInBatches(supabase, 'member_votes', filtered, 'vote_id,member_id')
+        }
+      }
+    }
+
+    // 3. sync_log 기록
+    await supabase.from('sync_log').upsert(
+      { key: 'votes', synced_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    )
+
+    return NextResponse.json({
+      ok: true,
+      votes: votes.length,
+      since,
+    })
+  } catch (err) {
+    console.error('[cron/sync-votes]', err)
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
+}
+
+async function fetchVotes(since: string) {
+  const rows: object[] = []
+  let page = 1
+  while (true) {
+    const params = new URLSearchParams({
+      KEY: ASSEMBLY_API_KEY, Type: 'json', AGE: '22',
+      pIndex: String(page), pSize: '100', LAW_PROC_DT: since,
+    })
+    const res = await fetch(`${BASE_URL}/nwbpacrgavhjryiph?${params}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    })
+    const data = await res.json()
+    const wrapper = data?.nwbpacrgavhjryiph ?? []
+    if (wrapper.length < 2) break
+    const head = wrapper[0]?.head ?? []
+    const code = head[1]?.RESULT?.CODE ?? ''
+    if (!['INFO-000', 'INFO-200'].includes(code)) break
+    const total = parseInt(head[0]?.list_total_count ?? '0')
+    const pageRows: Record<string, string>[] = wrapper[1]?.row ?? []
+    rows.push(...pageRows.map(parseVote).filter((r): r is NonNullable<ReturnType<typeof parseVote>> => r !== null))
+    if (rows.length >= total || pageRows.length === 0) break
+    page++
+  }
+  return rows as ReturnType<typeof parseVote>[]
+}
+
+function parseVote(raw: Record<string, string>) {
+  const id = raw.BILL_ID
+  const title = raw.BILL_NM
+  if (!id || !title) return null
+  const dateRaw = raw.LAW_PROC_DT ?? raw.PROC_DT ?? ''
+  const voted_at = dateRaw.length === 8
+    ? `${dateRaw.slice(0,4)}-${dateRaw.slice(4,6)}-${dateRaw.slice(6)}T00:00:00+09:00`
+    : dateRaw || null
+  const resultRaw = raw.PROC_RESULT_CD ?? ''
+  const result = Object.entries(RESULT_MAP).find(([k]) => resultRaw.includes(k))?.[1] ?? null
+  return {
+    id, title, voted_at, result, bill_id: null,
+    yes_count: parseInt(raw.YES_TCNT ?? '0') || 0,
+    no_count: parseInt(raw.NO_TCNT ?? '0') || 0,
+    abstain_count: parseInt(raw.BLANK_TCNT ?? '0') || 0,
+    absent_count: 0,
+  }
+}
+
+async function fetchMemberVotes(voteIds: string[]) {
+  const rows: { vote_id: string; member_id: string; stance: string }[] = []
+  for (const vid of voteIds) {
+    const params = new URLSearchParams({
+      KEY: ASSEMBLY_API_KEY, Type: 'json', AGE: '22',
+      BILL_ID: vid, pIndex: '1', pSize: '300',
+    })
+    const res = await fetch(`${BASE_URL}/nojepdqqaweusdfbi?${params}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    })
+    const data = await res.json()
+    const wrapper = data?.nojepdqqaweusdfbi ?? []
+    if (wrapper.length < 2) continue
+    const pageRows: Record<string, string>[] = wrapper[1]?.row ?? []
+    for (const r of pageRows) {
+      const stance = STANCE_MAP[r.RESULT_VOTE_MOD ?? '']
+      if (r.BILL_ID && r.MONA_CD && stance) {
+        rows.push({ vote_id: r.BILL_ID, member_id: r.MONA_CD, stance })
+      }
+    }
+  }
+  return rows
+}
+
+async function getValidMemberIds(supabase: SupabaseClient) {
+  const { data } = await supabase.from('members').select('id')
+  return new Set((data ?? []).map((m: { id: string }) => m.id))
+}
+
+async function upsertInBatches(
+  supabase: SupabaseClient,
+  table: string,
+  rows: object[],
+  onConflict: string,
+) {
+  for (let i = 0; i < rows.length; i += 100) {
+    await supabase.from(table).upsert(rows.slice(i, i + 100), { onConflict })
+  }
+}

@@ -27,19 +27,18 @@ PoliScope는 이 데이터를 한곳에서 쉽게 검색할 수 있도록 정리
 | `/regions/[name]` | 지역 상세. 시장·도지사 카드, 의석 분포 바, 지역구 의원 그리드 |
 | `/members` | 의원 검색. 이름·지역구·정당 필터. 시장·도지사 섹션 포함 |
 | `/members/[id]` | 의원 상세 프로필. 발의 법안, 표결 이력, 출석률, 재산 |
-| `/bills` | 법안 검색. 상태(계류·가결·폐기)·위원회·발의자 필터 |
-| `/bills/[id]` | 법안 상세. AI 요약, 페르소나별 해석, 원문 링크 |
-| `/votes` | 본회의 표결 목록 |
-| `/votes/[id]` | 표결 상세. 정당별·의원별 찬반 현황 |
+| `/bills` | 법안 검색. 상태 카드 5분할(전체·가결·부결·폐기·계류), 발의일·표결일·접전순 정렬, 위원회 필터 |
+| `/bills/[id]` | 법안 상세. 표결 결과(286명 기준 stacked bar), 정당별 찬반, 의원 도트 그리드, AI 요약 |
+| `/votes` | 301 redirect → `/bills?status=passed&sort=voteDate` |
 
 ---
 
 ## 기술 스택
 
 **프론트엔드**
-- Next.js 14 (App Router), TypeScript, Tailwind CSS
-- shadcn/ui, Recharts, D3.js + TopoJSON (지역구 지도)
-- 폰트: Noto Serif KR, Noto Sans KR, IM Fell English
+- Next.js 16 (App Router), TypeScript, Tailwind CSS (보조)
+- Recharts, D3.js + TopoJSON (지역구 지도)
+- 폰트: Noto Serif KR, Noto Sans KR, IM Fell English, JetBrains Mono
 
 **백엔드 및 인프라**
 - Supabase (PostgreSQL + pgvector)
@@ -168,8 +167,8 @@ poliscope/
 │   ├── (landing)/page.tsx      # 메인 랜딩 페이지 (인터랙티브 지도)
 │   ├── regions/[name]/         # 지역 상세 페이지 (시장·도지사 + 지역구 의원)
 │   ├── members/                # 의원 검색 및 프로필
-│   ├── bills/                  # 법안 검색 및 상세
-│   ├── votes/                  # 표결 목록 및 상세
+│   ├── bills/                  # 법안 목록·상세 (표결 포함, /votes는 redirect됨)
+│   ├── votes/                  # 레거시 (next.config.js에서 /bills로 301 redirect)
 │   └── api/                    # API Routes
 ├── components/
 │   ├── map/
@@ -179,6 +178,10 @@ poliscope/
 │   │   ├── MemberSearch.tsx
 │   │   └── GovernorCard.tsx    # 시장·도지사 카드
 │   ├── bills/
+│   │   ├── BillStatusCards.tsx # 5개 상태 카드 (전체·가결·부결·폐기·계류)
+│   │   ├── BillFilterBar.tsx   # 검색+위원회 필터 + 정렬 토글
+│   │   ├── BillRow.tsx         # 목록 행 (상태·제목·표결바·날짜 4열)
+│   │   └── MemberVoteGrid.tsx  # 의원 도트 그리드 (법안 상세용)
 │   └── ui/
 ├── lib/
 │   ├── regions.ts              # 17개 시·도 데이터 (의석·시장·도지사, 민선 8기)
@@ -198,9 +201,9 @@ poliscope/
 
 ## 로드맵
 
-- **1단계 (현재):** 데이터 파이프라인 완성. 의원·법안·표결 데이터 매일 자동 수집
-- **2단계:** 검색·프로필 UI. 의원 검색, 법안 검색, 표결 목록 페이지
-- **3단계:** AI 요약 레이어. 법안 요약, 페르소나별 해석, 유사 법안 추천
+- **1단계 ✅ 완료:** 데이터 파이프라인. 의원·법안·표결 데이터 매일 자동 수집
+- **2단계 ✅ 완료:** 검색·프로필 UI. 의원·법안 페이지 완성. `/votes`를 `/bills`에 흡수 (발의→심사→표결 단일 흐름)
+- **3단계 (진행 중):** AI 요약 레이어. 법안 요약, 페르소나별 해석, 유사 법안 추천
 - **이후:** 트랙션에 따라 방향 결정
 
 ---

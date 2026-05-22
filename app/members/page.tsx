@@ -9,10 +9,10 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-  title: '의원 검색 — PoliScope',
+  title: '의원 검색 | PoliScope',
   description: '22대 국회 의원 286명을 이름·지역구·정당으로 검색하세요.',
   openGraph: {
-    title: '의원 검색 — PoliScope',
+    title: '의원 검색 | PoliScope',
     description: '22대 국회 의원 286명을 이름·지역구·정당으로 검색하세요.',
   },
 }

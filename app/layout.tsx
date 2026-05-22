@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
-import { Noto_Sans_KR, Noto_Serif_KR, IM_Fell_English } from 'next/font/google'
+import { Noto_Sans_KR, Noto_Serif_KR, IM_Fell_English, JetBrains_Mono } from 'next/font/google'
+import { SiteNav } from '@/components/ui/SiteNav'
 import './globals.css'
 
 const notoSans = Noto_Sans_KR({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-sans' })
 const notoSerif = Noto_Serif_KR({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-serif' })
 const imFell = IM_Fell_English({ subsets: ['latin'], weight: ['400'], style: ['normal', 'italic'], variable: '--font-fell' })
+const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://poliscope.kr'),
@@ -20,8 +22,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={`${notoSans.variable} ${notoSerif.variable} ${imFell.variable}`}>
-      <body>{children}</body>
+    <html lang="ko" className={`${notoSans.variable} ${notoSerif.variable} ${imFell.variable} ${jetBrainsMono.variable}`}>
+      <body>
+        <SiteNav />
+        {children}
+      </body>
     </html>
   )
 }

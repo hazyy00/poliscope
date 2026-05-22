@@ -202,9 +202,10 @@ interface Tooltip {
 interface Props {
   className?: string
   onRegionClick?: (name: string) => void
+  onRegionHover?: (name: string | null) => void
 }
 
-export function KoreaMap({ className, onRegionClick }: Props) {
+export function KoreaMap({ className, onRegionClick, onRegionHover }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<Tooltip | null>(null)
@@ -246,7 +247,7 @@ export function KoreaMap({ className, onRegionClick }: Props) {
     const target = (e.target as Element).closest('[data-region]')
     if (target) {
       const name = (target as HTMLElement).dataset.region!
-      if (hovered !== name) setHovered(name)
+      if (hovered !== name) { setHovered(name); onRegionHover?.(name) }
       const region = REGIONS.find(r => r.name === name)
       if (region) {
         const svgRect = svgRef.current?.getBoundingClientRect()
@@ -259,13 +260,15 @@ export function KoreaMap({ className, onRegionClick }: Props) {
     } else {
       if (hovered && hovered !== selected) setHovered(null)
       if (hovered !== selected) setTooltip(null)
+      onRegionHover?.(null)
     }
-  }, [hovered, selected])
+  }, [hovered, selected, onRegionHover])
 
   const handleMouseLeave = useCallback(() => {
     if (hovered && hovered !== selected) setHovered(null)
     if (!selected) setTooltip(null)
-  }, [hovered, selected])
+    onRegionHover?.(null)
+  }, [hovered, selected, onRegionHover])
 
   const handleClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     const target = (e.target as Element).closest('[data-region]')
@@ -276,8 +279,10 @@ export function KoreaMap({ className, onRegionClick }: Props) {
         setSelected(null)
         setHovered(null)
         setTooltip(null)
+        onRegionHover?.(null)
       } else {
         setSelected(name)
+        onRegionHover?.(name)
         onRegionClick?.(name)
       }
     } else {

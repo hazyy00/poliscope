@@ -16,9 +16,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name } = await params
   const decodedName = decodeURIComponent(name)
   const regionData = REGIONS_DATA.find(r => r.name === decodedName)
-  if (!regionData) return { title: '지역 — PoliScope' }
+  if (!regionData) return { title: '지역 | PoliScope' }
   return {
-    title: `${decodedName} — PoliScope`,
+    title: `${decodedName} | PoliScope`,
     description: `22대 총선 ${decodedName} 의석 현황: ${regionData.party} ${regionData.seats} (${regionData.rate})`,
   }
 }

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-votes",
+      "schedule": "0 1 * * *"
+    }
+  ]
+}

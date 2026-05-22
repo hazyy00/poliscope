@@ -24,9 +24,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const { data } = await getMember(id)
-  if (!data) return { title: '의원 — PoliScope' }
+  if (!data) return { title: '의원 | PoliScope' }
   return {
-    title: `${data.name} (${data.party ?? '무소속'}) — PoliScope`,
+    title: `${data.name} (${data.party ?? '무소속'}) | PoliScope`,
     description: `${data.party ?? '무소속'} · ${data.district ?? '비례대표'} · 발의·표결·출석 기록`,
     openGraph: {
       title: `${data.name} 의원 프로필`,
@@ -101,8 +101,11 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 80px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <Link href="/members" style={{ fontSize: 13, color: 'var(--t3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 24 }}>
-          ← 의원 목록
+        <Link href="/members" style={{ fontSize: 13, color: 'var(--t3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 32 }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          의원 목록으로 돌아가기
         </Link>
 
         {/* Profile header */}

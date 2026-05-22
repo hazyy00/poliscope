@@ -12,6 +12,46 @@
   --t2:  #5A554A;
   --t3:  #8A8478;
   --bd:  rgba(26,25,22,.11);
+
+  --st-pass:    #4A3F8F;
+  --st-pass-bg: rgba(74,63,143,0.10);
+  --st-fail:    #A8362A;
+  --st-fail-bg: rgba(168,54,42,0.10);
+  --st-pend:    #8A6A1F;
+  --st-pend-bg: rgba(176,128,40,0.13);
+  --st-drop:    #6B6357;
+  --st-drop-bg: rgba(107,99,87,0.13);
+}
+
+em.fell {
+  font-family: var(--font-fell), serif;
+  font-style: italic;
+  color: var(--pu);
+}
+
+.vote-dot {
+  transition: transform 0.1s ease;
+  cursor: default;
+}
+.vote-dot:hover {
+  transform: scale(1.6);
+  z-index: 10;
+  position: relative;
+}
+
+@media (max-width: 1024px) {
+  .vote-dot-grid {
+    grid-template-columns: repeat(14, 12px) !important;
+  }
+  .bill-row-grid {
+    grid-template-columns: 90px 1fr !important;
+  }
+  .bill-row-vote-col {
+    display: none !important;
+  }
+  .bill-row-date-col {
+    display: none !important;
+  }
 }
 
 @keyframes pulse {
