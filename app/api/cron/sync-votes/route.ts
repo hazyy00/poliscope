@@ -102,7 +102,7 @@ function parseVote(raw: Record<string, string>) {
   const resultRaw = raw.PROC_RESULT_CD ?? ''
   const result = Object.entries(RESULT_MAP).find(([k]) => resultRaw.includes(k))?.[1] ?? null
   return {
-    id, title, voted_at, result, bill_id: null,
+    id, title, voted_at, result,
     yes_count: parseInt(raw.YES_TCNT ?? '0') || 0,
     no_count: parseInt(raw.NO_TCNT ?? '0') || 0,
     abstain_count: parseInt(raw.BLANK_TCNT ?? '0') || 0,

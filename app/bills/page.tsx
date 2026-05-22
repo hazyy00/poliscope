@@ -38,7 +38,7 @@ interface Props {
   searchParams: Promise<{
     q?: string
     status?: string
-    committee?: string
+    category?: string
     sort?: string
     page?: string
   }>
@@ -66,9 +66,10 @@ export default async function BillsPage({ searchParams }: Props) {
   const supabase = createServerClient()
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
   const offset = (page - 1) * PAGE_SIZE
-  const sort = sp.sort ?? 'proposeDate'
+  const sort = sp.sort ?? 'voteDate'
   const statusGroup = sp.status ?? ''
   const statusFilter = STATUS_GROUPS[statusGroup] ?? null
+  const category = sp.category ?? ''
 
   const today = new Date().toISOString()
 
@@ -133,7 +134,7 @@ export default async function BillsPage({ searchParams }: Props) {
 
     if (statusFilter) query = query.in('status', statusFilter)
     if (sp.q) query = query.ilike('title', `%${sp.q}%`)
-    if (sp.committee) query = query.ilike('committee', `%${sp.committee}%`)
+    if (category) query = query.eq('category', category)
 
     const { data, count } = await query
     totalCount = count ?? 0
@@ -153,7 +154,7 @@ export default async function BillsPage({ searchParams }: Props) {
     if (statusFilter) q = q.in('status', statusFilter)
     else q = q.not('status', 'eq', '계류')
     if (sp.q) q = q.ilike('title', `%${sp.q}%`)
-    if (sp.committee) q = q.ilike('committee', `%${sp.committee}%`)
+    if (category) q = q.eq('category', category)
 
     const { data: vdData, count: vdCount } = await q
     totalCount = vdCount ?? 0
@@ -202,7 +203,7 @@ export default async function BillsPage({ searchParams }: Props) {
         if (b._score === Infinity) return false
         if (statusFilter && !statusFilter.includes(b.status ?? '')) return false
         if (sp.q && !b.title?.toLowerCase().includes(sp.q.toLowerCase())) return false
-        if (sp.committee && !b.committee?.includes(sp.committee)) return false
+        if (category && (b as any).category !== category) return false
         return true
       })
       .sort((a: { _score: number }, b: { _score: number }) => a._score - b._score)
@@ -217,8 +218,8 @@ export default async function BillsPage({ searchParams }: Props) {
     const params = new URLSearchParams()
     if (sp.q) params.set('q', sp.q)
     if (sp.status) params.set('status', sp.status)
-    if (sp.committee) params.set('committee', sp.committee)
-    if (sort !== 'proposeDate') params.set('sort', sort)
+    if (category) params.set('category', category)
+    if (sort !== 'voteDate') params.set('sort', sort)
     if (p > 1) params.set('page', String(p))
     const qs = params.toString()
     return `/bills${qs ? `?${qs}` : ''}`
@@ -269,7 +270,7 @@ export default async function BillsPage({ searchParams }: Props) {
         <Suspense>
           <BillFilterBar
             initialQ={sp.q ?? ''}
-            initialCommittee={sp.committee ?? ''}
+            initialCategory={category}
             initialSort={sort}
           />
         </Suspense>

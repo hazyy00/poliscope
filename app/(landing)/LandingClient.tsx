@@ -201,6 +201,11 @@ export function LandingClient({ stats }: { stats: Stats }) {
   }, [])
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  useEffect(() => {
     if (introPlayed) return
 
     const l1 = document.getElementById('l1')
