@@ -1,6 +1,33 @@
 import { PersonaTabs } from './PersonaTabs'
 import type { AiSummaryJson } from '@/lib/types'
 
+export function AISummaryPlaceholder() {
+  return (
+    <div style={{
+      padding: '24px 28px',
+      border: '0.5px solid var(--bd)', background: 'var(--ivd)',
+      display: 'grid', gridTemplateColumns: '180px 1fr', gap: 32,
+    }}>
+      <div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 10,
+          letterSpacing: '0.1em', color: 'var(--pu)',
+          textTransform: 'uppercase',
+        }}>AI 요약</div>
+        <div style={{
+          fontFamily: 'var(--font-fell)', fontStyle: 'italic',
+          fontSize: 13, color: 'var(--t3)', marginTop: 4,
+        }}>plain-language abstract</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontFamily: 'var(--font-serif)', fontWeight: 300, color: 'var(--t3)' }}>
+          이 법안의 AI 요약이 아직 생성되지 않았습니다.
+        </span>
+      </div>
+    </div>
+  )
+}
+
 interface Props {
   summary: AiSummaryJson
   confidence: number
