@@ -14,7 +14,8 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name } = await params
-  const decodedName = decodeURIComponent(name)
+  let decodedName: string
+  try { decodedName = decodeURIComponent(name) } catch { return { title: '지역 | PoliScope' } }
   const regionData = REGIONS_DATA.find(r => r.name === decodedName)
   if (!regionData) return { title: '지역 | PoliScope' }
   return {
@@ -25,7 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RegionPage({ params }: Props) {
   const { name } = await params
-  const decodedName = decodeURIComponent(name)
+  let decodedName: string
+  try { decodedName = decodeURIComponent(name) } catch { notFound() }
 
   const regionData = REGIONS_DATA.find(r => r.name === decodedName)
   if (!regionData) notFound()

@@ -41,7 +41,7 @@ export function BillFilterBar({ initialQ, initialCategory, initialSort }: Props)
 
   function handleSearch(value: string) {
     if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => pushParams({ q: value || null }), 300)
+    timerRef.current = setTimeout(() => pushParams({ q: value.trim() || null }), 300)
   }
 
   function handleSort(value: string) {

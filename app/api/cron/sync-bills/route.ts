@@ -74,7 +74,7 @@ export async function GET(req: Request) {
           proposer_id: raw.RST_MONA_CD?.split(',')[0]?.trim() || raw.MONA_CD || null,
           proposer_names: raw.RST_PROPOSER || null,
           proposed_at: normalizeDate(raw.PROPOSE_DT),
-          passed_at: normalizeDate(raw.PROC_DT) || null,
+          passed_at: normalizeDate(raw.LAW_PROC_DT ?? raw.PROC_DT ?? raw.RGS_PROC_DT) || null,
           content_url: raw.LINK_URL || raw.DETAIL_LINK || null,
           cosponsor_count: parseCosponsorCount(raw.PROPOSER, raw.RST_MONA_CD),
         }

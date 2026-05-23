@@ -150,10 +150,11 @@ function parseVote(raw: Record<string, string>) {
   const id = raw.BILL_ID
   const title = raw.BILL_NM
   if (!id || !title) return null
-  const dateRaw = raw.LAW_PROC_DT ?? raw.PROC_DT ?? ''
-  const voted_at = dateRaw.length === 8
-    ? `${dateRaw.slice(0,4)}-${dateRaw.slice(4,6)}-${dateRaw.slice(6)}T00:00:00+09:00`
-    : dateRaw || null
+  const dateRaw = raw.LAW_PROC_DT ?? raw.RGS_PROC_DT ?? raw.RGS_PRESENT_DT ?? raw.PROC_DT ?? ''
+  const toIso = (d: string) => d.length === 8
+    ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6)}T00:00:00+09:00`
+    : d
+  const voted_at = dateRaw ? toIso(dateRaw) : null
   const resultRaw = raw.PROC_RESULT_CD ?? ''
   const result = Object.entries(RESULT_MAP).find(([k]) => resultRaw.includes(k))?.[1] ?? null
   return {

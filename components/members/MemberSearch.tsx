@@ -27,7 +27,7 @@ export function MemberSearch() {
     if (field === 'q') setQ(value)
     else setDistrict(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => push({ [field]: value }), 300)
+    debounceRef.current = setTimeout(() => push({ [field]: value.trim() }), 300)
   }
 
   return (

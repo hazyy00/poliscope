@@ -14,11 +14,13 @@ export async function GET(req: Request) {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-  // passed_at 또는 content_url이 null인 가결/수정가결 법안 수집
+  const STATUS_TARGETS = ['가결', '수정가결', '부결', '폐기']
+
+  // passed_at 또는 content_url이 null인 법안 수집
   const { data: bills } = await supabase
     .from('bills')
     .select('id, passed_at, content_url')
-    .in('status', ['가결', '수정가결'])
+    .in('status', STATUS_TARGETS)
     .or('passed_at.is.null,content_url.is.null')
     .eq('is_hidden', false)
 
@@ -29,6 +31,7 @@ export async function GET(req: Request) {
   let updated = 0
   let failed = 0
 
+  // 1st pass: Assembly 외부 API에서 LAW_PROC_DT / LINK_URL 수집
   for (const bill of bills) {
     try {
       const params = new URLSearchParams({
@@ -60,7 +63,62 @@ export async function GET(req: Request) {
         await supabase.from('bills').update(updates).eq('id', bill.id)
         updated++
       }
-    } catch {
+    } catch (err) {
+      console.error('[repair/bills] bill.id:', bill.id, err)
+      failed++
+    }
+  }
+
+  // 2nd pass: 외부 API에서 날짜를 못 얻은 법안 → votes 테이블 voted_at 활용
+  const { data: stillNull } = await supabase
+    .from('bills')
+    .select('id')
+    .in('status', STATUS_TARGETS)
+    .is('passed_at', null)
+    .eq('is_hidden', false)
+
+  for (const bill of stillNull ?? []) {
+    const { data: vote } = await supabase
+      .from('votes')
+      .select('voted_at')
+      .eq('bill_id', bill.id)
+      .not('voted_at', 'is', null)
+      .order('voted_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (vote?.voted_at) {
+      await supabase
+        .from('bills')
+        .update({ passed_at: (vote.voted_at as string).slice(0, 10) })
+        .eq('id', bill.id)
+      updated++
+    }
+  }
+
+  // 3rd pass: ARC_ 법안 중 아직 null → LIKMS HTML에서 의결일자 파싱
+  const { data: arcNull } = await supabase
+    .from('bills')
+    .select('id')
+    .in('status', STATUS_TARGETS)
+    .is('passed_at', null)
+    .like('id', 'ARC_%')
+    .eq('is_hidden', false)
+
+  for (const bill of arcNull ?? []) {
+    try {
+      const html = await fetch(
+        `https://likms.assembly.go.kr/bill/billDetail.do?billId=${bill.id}`,
+        { headers: { 'User-Agent': 'Mozilla/5.0' } }
+      ).then(r => r.text())
+
+      const m = html.match(/의결일자[\s\S]{1,150}?(\d{4}-\d{2}-\d{2})/)
+      if (m) {
+        await supabase.from('bills').update({ passed_at: m[1] }).eq('id', bill.id)
+        updated++
+      }
+    } catch (err) {
+      console.error('[repair/bills] ARC_ LIKMS scrape failed:', bill.id, err)
       failed++
     }
   }

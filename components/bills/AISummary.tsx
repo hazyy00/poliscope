@@ -14,10 +14,6 @@ export function AISummaryPlaceholder() {
           letterSpacing: '0.1em', color: 'var(--pu)',
           textTransform: 'uppercase',
         }}>AI 요약</div>
-        <div style={{
-          fontFamily: 'var(--font-fell)', fontStyle: 'italic',
-          fontSize: 13, color: 'var(--t3)', marginTop: 4,
-        }}>plain-language abstract</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontFamily: 'var(--font-serif)', fontWeight: 300, color: 'var(--t3)' }}>
@@ -47,10 +43,6 @@ export function AISummary({ summary, confidence, contentUrl }: Props) {
           letterSpacing: '0.1em', color: 'var(--pu)',
           textTransform: 'uppercase',
         }}>AI 요약</div>
-        <div style={{
-          fontFamily: 'var(--font-fell)', fontStyle: 'italic',
-          fontSize: 13, color: 'var(--t3)', marginTop: 4,
-        }}>plain-language abstract</div>
       </div>
       <div>
         <p style={{

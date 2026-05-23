@@ -145,7 +145,7 @@ export default async function BillsPage({ searchParams }: Props) {
 
     if (statusFilter) q = q.in('status', statusFilter)
     else if (statusGroup !== 'all') q = q.not('status', 'eq', '계류').not('passed_at', 'is', null)
-    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (sp.q) q = q.or(`title.ilike.%${sp.q}%,proposer_names.ilike.%${sp.q}%,committee.ilike.%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
     const { data: vdData, count: vdCount } = await q
@@ -162,7 +162,7 @@ export default async function BillsPage({ searchParams }: Props) {
       .not('passed_at', 'is', null)
 
     if (statusFilter) q = q.in('status', statusFilter)
-    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (sp.q) q = q.or(`title.ilike.%${sp.q}%,proposer_names.ilike.%${sp.q}%,committee.ilike.%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
     const { data: allBills } = await q
@@ -218,7 +218,7 @@ export default async function BillsPage({ searchParams }: Props) {
       .not('passed_at', 'is', null)
 
     if (statusFilter) q = q.in('status', statusFilter)
-    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (sp.q) q = q.or(`title.ilike.%${sp.q}%,proposer_names.ilike.%${sp.q}%,committee.ilike.%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
     const { data: allBills } = await q
@@ -277,7 +277,7 @@ export default async function BillsPage({ searchParams }: Props) {
       .range(offset, offset + PAGE_SIZE - 1)
 
     if (statusFilter) q = q.in('status', statusFilter)
-    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (sp.q) q = q.or(`title.ilike.%${sp.q}%,proposer_names.ilike.%${sp.q}%,committee.ilike.%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
     const { data: csData, count: csCount } = await q
