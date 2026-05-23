@@ -68,7 +68,7 @@ export async function GET(req: Request) {
           content_url: raw.LINK_URL || raw.DETAIL_LINK || null,
         }
       })
-      .filter(Boolean)
+      .filter((b): b is NonNullable<typeof b> => b !== null)
 
     for (let i = 0; i < bills.length; i += 100) {
       await supabase.from('bills').upsert(bills.slice(i, i + 100), { onConflict: 'id' })
