@@ -133,16 +133,23 @@ export default async function BillDetailPage({ params }: Props) {
       .from('votes')
       .select('*')
       .eq('bill_id', id)
-      .order('voted_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .order('voted_at', { ascending: false }),
   ])
 
   if (!billRes.data) notFound()
   const bill = billRes.data
   const proposer: Proposer | null = Array.isArray(bill.members) ? (bill.members[0] ?? null) : bill.members
   const cosponsors = cosponsorsRes.data ?? []
-  const vote = voteRes.data
+  const allVotes = voteRes.data ?? []
+  const statusToResult: Record<string, string> = { '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기' }
+  const targetResult = statusToResult[bill.status ?? '']
+  const pickVote = (arr: typeof allVotes) =>
+    arr.sort((a, b) =>
+      ((b.yes_count??0)+(b.no_count??0)+(b.abstain_count??0)+(b.absent_count??0)) -
+      ((a.yes_count??0)+(a.no_count??0)+(a.abstain_count??0)+(a.absent_count??0))
+    )[0] ?? null
+  const matching = targetResult ? allVotes.filter(v => v.result === targetResult) : []
+  const vote = (matching.length > 0 ? pickVote([...matching]) : null) ?? pickVote([...allVotes]) ?? null
 
   let memberVotes: MemberVoteRow[] = []
   if (vote) {
@@ -156,7 +163,7 @@ export default async function BillDetailPage({ params }: Props) {
   const aiSummary = bill.ai_summary as AiSummaryJson | null
 
   const STATUS_STEPS = ['발의', '위원회 회부', '심사', '본회의 표결']
-  const currentStep = bill.status === '계류' ? 1 : bill.status === '가결' || bill.status === '수정가결' || bill.status === '부결' || bill.status === '폐기' ? 3 : 2
+  const currentStep = bill.status === '계류' ? 1 : ['가결', '수정가결', '부결', '폐기', '철회', '무효'].includes(bill.status ?? '') ? 3 : 2
 
   // Party breakdown from member votes
   const partyMap = new Map<string, Record<string, number>>()
@@ -194,27 +201,30 @@ export default async function BillDetailPage({ params }: Props) {
   const bold = { fontWeight: 500 } as const
 
   const outcomeLabel: React.ReactNode = (() => {
-    if (!vote?.result) return null
     if (billDroppedAfterPass) return <><span style={pass}>가결</span>되었으나 <span style={drop}>폐기</span>되었습니다.</>
-    if (vote.result === '가결') return <><span style={pass}>가결</span>되었습니다.</>
-    if (vote.result === '부결') return <><span style={fail}>부결</span>되었습니다.</>
-    if (vote.result === '폐기') return <><span style={drop}>폐기</span>되었습니다.</>
-    return `${vote.result}되었습니다.`
+    if (bill.status === '가결' || bill.status === '수정가결') return <><span style={pass}>가결</span>되었습니다.</>
+    if (bill.status === '부결') return <><span style={fail}>부결</span>되었습니다.</>
+    if (bill.status === '폐기') return <><span style={drop}>폐기</span>되었습니다.</>
+    return null
   })()
 
   const outcomeDesc: React.ReactNode = (() => {
-    if (!voteResult || !vote?.result) return null
+    if (!voteResult || !vote) return null
     const diff = voteResult.yes - voteResult.no
     if (billDroppedAfterPass) return (
-      <>찬성이 반대보다 <span style={{ ...pass, ...bold }}>{diff}표</span> 많아 본회의를 통과했으나,{' '}
+      <>찬성이 반대보다 <span style={{ ...pass, ...bold }}>{Math.abs(diff)}표</span> 많아 본회의를 통과했으나,{' '}
       <span style={drop}>임기만료로 폐기</span>되었습니다.</>
     )
-    if (vote.result === '가결') return (
-      <>찬성이 반대보다 <span style={{ ...pass, ...bold }}>{diff}표</span> 많아 본회의를 통과했습니다.</>
+    if (bill.status === '가결' || bill.status === '수정가결') return (
+      <>찬성이 반대보다 <span style={{ ...pass, ...bold }}>{Math.abs(diff)}표</span> 많아 본회의를 통과했습니다.</>
     )
-    if (vote.result === '부결') return (
-      <>반대가 찬성보다 <span style={{ ...fail, ...bold }}>{voteResult.no - voteResult.yes}표</span> 많아 부결되었습니다.</>
-    )
+    if (bill.status === '부결') {
+      const diff = voteResult.no - voteResult.yes
+      if (diff > 0) return (
+        <>반대가 찬성보다 <span style={{ ...fail, ...bold }}>{diff}표</span> 많아 부결되었습니다.</>
+      )
+      return <>찬성이 <span style={{ ...fail, ...bold }}>{voteResult.yes}표</span>였으나 의결정족수에 미달해 부결되었습니다.</>
+    }
     return null
   })()
 
@@ -296,6 +306,28 @@ export default async function BillDetailPage({ params }: Props) {
               공동발의 ({cosponsors.length}명)
             </div>
             <Cosponsors cosponsors={cosponsors as unknown as Cosponsor[]} />
+          </div>
+        )}
+
+        {/* Outcome card — shown alone when vote data is unavailable */}
+        {!voteResult && outcomeLabel && (
+          <div style={{ marginBottom: 56 }}>
+            <SectionHeader num="01" label="표결 결과" en="Vote tally" />
+            <div style={{
+              border: '0.5px solid var(--bd)', padding: 22,
+              background: 'var(--ivd)',
+              display: 'inline-flex', flexDirection: 'column',
+              minWidth: 280,
+            }}>
+              <div style={{ fontFamily: 'var(--font-fell)', fontStyle: 'italic', fontSize: 13, color: 'var(--pu)', marginBottom: 6 }}>Outcome</div>
+              <div style={{
+                fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300,
+                letterSpacing: '-0.025em', lineHeight: 1.3,
+                color: 'var(--t1)', wordBreak: 'keep-all',
+              }}>
+                {outcomeLabel}
+              </div>
+            </div>
           </div>
         )}
 

@@ -7,7 +7,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const BASE_URL = 'https://open.assembly.go.kr/portal/openapi'
 
 const RESULT_MAP: Record<string, string> = {
-  '원안가결': '가결', '수정가결': '가결',
+  '원안가결': '가결', '수정가결': '수정가결',
   '부결': '부결', '폐기': '폐기', '무효': '무효',
 }
 const STANCE_MAP: Record<string, string> = {
@@ -48,7 +48,39 @@ export async function GET(req: Request) {
       }
     }
 
-    // 3. sync_log 기록
+    // 3. votes에 result가 있는데 bills 테이블에 없는 bill 자동 삽입 (대안·정부안 등)
+    const RESULT_TO_STATUS: Record<string, string> = {
+      '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기',
+    }
+    const votedBills = votes.filter(v => v && v.result && RESULT_TO_STATUS[v.result])
+    if (votedBills.length > 0) {
+      const { data: existing } = await supabase
+        .from('bills')
+        .select('id')
+        .in('id', votedBills.map(v => v!.id))
+      const existingIds = new Set((existing ?? []).map((b: { id: string }) => b.id))
+      const newBills = votedBills
+        .filter(v => !existingIds.has(v!.id))
+        .map(v => ({
+          id: v!.id,
+          title: (v!.title ?? '').replace(/\s*\([^)]+\)\s*$/, '').trim() || v!.title,
+          status: RESULT_TO_STATUS[v!.result!],
+          passed_at: v!.voted_at ? v!.voted_at.slice(0, 10) : null,
+        }))
+      if (newBills.length > 0) {
+        await upsertInBatches(supabase, 'bills', newBills, 'id')
+      }
+    }
+
+    // 4. bill status 동기화 — votes 기반 역추론 제거, 공식 bills API 기준
+    if (votes.length > 0) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://poliscope.kr'
+      await fetch(`${appUrl}/api/cron/sync-bills`, {
+        headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+      })
+    }
+
+    // 4. sync_log 기록
     await supabase.from('sync_log').upsert(
       { key: 'votes', synced_at: new Date().toISOString() },
       { onConflict: 'key' }
@@ -102,7 +134,7 @@ function parseVote(raw: Record<string, string>) {
   const resultRaw = raw.PROC_RESULT_CD ?? ''
   const result = Object.entries(RESULT_MAP).find(([k]) => resultRaw.includes(k))?.[1] ?? null
   return {
-    id, title, voted_at, result,
+    id, bill_id: id, title, voted_at, result,
     yes_count: parseInt(raw.YES_TCNT ?? '0') || 0,
     no_count: parseInt(raw.NO_TCNT ?? '0') || 0,
     abstain_count: parseInt(raw.BLANK_TCNT ?? '0') || 0,

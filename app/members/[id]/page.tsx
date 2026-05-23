@@ -53,7 +53,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
       .from('member_votes')
       .select('stance, vote_id, votes(id, title, voted_at, result)')
       .eq('member_id', id)
-      .order('vote_id', { ascending: false })
+      .order('voted_at', { referencedTable: 'votes', ascending: false })
       .limit(30),
     supabase
       .from('attendance')

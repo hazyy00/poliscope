@@ -67,7 +67,7 @@ export default async function BillsPage({ searchParams }: Props) {
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
   const offset = (page - 1) * PAGE_SIZE
   const sort = sp.sort ?? 'voteDate'
-  const statusGroup = sp.status ?? ''
+  const statusGroup = sp.status ?? 'passed'
   const statusFilter = STATUS_GROUPS[statusGroup] ?? null
   const category = sp.category ?? ''
 
@@ -98,10 +98,14 @@ export default async function BillsPage({ searchParams }: Props) {
     const votesArr = Array.isArray(b.votes) ? b.votes : (b.votes ? [b.votes] : [])
     // 여러 vote 중 총 투표수 가장 많은 것 선택 (all-zero 레코드 제외)
     const meaningful = votesArr.filter((x: any) => (x.yes_count ?? 0) + (x.no_count ?? 0) + (x.abstain_count ?? 0) > 0)
-    const v = meaningful.sort((a: any, b: any) =>
-      ((b.yes_count ?? 0) + (b.no_count ?? 0) + (b.abstain_count ?? 0)) -
-      ((a.yes_count ?? 0) + (a.no_count ?? 0) + (a.abstain_count ?? 0))
+    const statusToResult: Record<string, string> = { '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기' }
+    const targetResult = statusToResult[b.status ?? '']
+    const matching = targetResult ? meaningful.filter((x: any) => x.result === targetResult) : []
+    const byTotal = (arr: any[]) => arr.sort((a: any, c: any) =>
+      ((c.yes_count??0)+(c.no_count??0)+(c.abstain_count??0)+(c.absent_count??0)) -
+      ((a.yes_count??0)+(a.no_count??0)+(a.abstain_count??0)+(a.absent_count??0))
     )[0] ?? null
+    const v = (matching.length > 0 ? byTotal([...matching]) : null) ?? byTotal([...meaningful]) ?? null
     return {
       id: b.id,
       title: b.title,
@@ -127,7 +131,7 @@ export default async function BillsPage({ searchParams }: Props) {
   if (sort === 'proposeDate') {
     let query = supabase
       .from('bills')
-      .select('id, title, status, committee, proposed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at)', { count: 'exact' })
+      .select('id, title, status, committee, proposed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
       .eq('is_hidden', false)
       .order('proposed_at', { ascending: false })
       .range(offset, offset + PAGE_SIZE - 1)
@@ -145,14 +149,13 @@ export default async function BillsPage({ searchParams }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('bills')
-      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at)', { count: 'exact' })
+      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
       .eq('is_hidden', false)
-      .not('passed_at', 'is', null)
-      .order('passed_at', { ascending: false })
+      .order(statusGroup === 'pending' ? 'proposed_at' : 'passed_at', { ascending: false })
       .range(offset, offset + PAGE_SIZE - 1)
 
     if (statusFilter) q = q.in('status', statusFilter)
-    else q = q.not('status', 'eq', '계류')
+    else q = q.not('status', 'eq', '계류').not('passed_at', 'is', null)
     if (sp.q) q = q.ilike('title', `%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
@@ -165,7 +168,7 @@ export default async function BillsPage({ searchParams }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: allBills } = await (supabase as any)
       .from('bills')
-      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at)')
+      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
       .eq('is_hidden', false)
       .not('passed_at', 'is', null)
 
@@ -176,10 +179,14 @@ export default async function BillsPage({ searchParams }: Props) {
         const proposer = Array.isArray(b.members) ? b.members[0] : b.members
         const votesArr = Array.isArray(b.votes) ? b.votes : (b.votes ? [b.votes] : [])
         const meaningful = votesArr.filter((x: any) => (x.yes_count ?? 0) + (x.no_count ?? 0) + (x.abstain_count ?? 0) > 0)
-        const v = meaningful.sort((a: any, c: any) =>
-          ((c.yes_count ?? 0) + (c.no_count ?? 0) + (c.abstain_count ?? 0)) -
-          ((a.yes_count ?? 0) + (a.no_count ?? 0) + (a.abstain_count ?? 0))
+        const statusToResult: Record<string, string> = { '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기' }
+        const targetResult = statusToResult[b.status ?? '']
+        const cMatching = targetResult ? meaningful.filter((x: any) => x.result === targetResult) : []
+        const cByTotal = (arr: any[]) => arr.sort((a: any, c: any) =>
+          ((c.yes_count??0)+(c.no_count??0)+(c.abstain_count??0)+(c.absent_count??0)) -
+          ((a.yes_count??0)+(a.no_count??0)+(a.abstain_count??0)+(a.absent_count??0))
         )[0] ?? null
+        const v = (cMatching.length > 0 ? cByTotal([...cMatching]) : null) ?? cByTotal([...meaningful]) ?? null
         const yes = v?.yes_count ?? 0
         const no = v?.no_count ?? 0
         const score = (yes + no) > 0 ? Math.abs(yes - no) / (yes + no) : Infinity
@@ -259,11 +266,11 @@ export default async function BillsPage({ searchParams }: Props) {
               margin: '14px 0 0', maxWidth: 540,
               fontSize: 14, fontWeight: 300, color: 'var(--t2)', lineHeight: 1.7,
             }}>
-              17,255건의 법안과 표결을 한 화면에서. 법이 어디까지 갔는지,<br />누가 어떻게 투표했는지 확인하세요.
+              {statusCounts[0].toLocaleString()}건의 법안과 표결을 한 화면에서. 법이 어디까지 갔는지,<br />누가 어떻게 투표했는지 확인하세요.
             </p>
           </div>
           <Suspense>
-            <BillStatusCards cards={statusCards} activeStatus={statusGroup} />
+            <BillStatusCards cards={statusCards.filter(c => c.value !== '')} activeStatus={statusGroup} totalCount={statusCounts[0]} />
           </Suspense>
         </header>
 

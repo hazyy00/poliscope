@@ -13,10 +13,10 @@ interface Props {
 }
 
 const STANCE_COLOR: Record<string, string> = {
-  '찬성': '#3D6DB5',
-  '반대': '#C0392B',
-  '기권': '#F5A623',
-  '불참': '#AAAAAA',
+  '찬성': 'var(--pu)',
+  '반대': 'var(--st-fail)',
+  '기권': 'var(--t2)',
+  '불참': 'var(--t3)',
 }
 
 export function VotingRecord({ votes }: Props) {

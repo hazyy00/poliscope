@@ -111,9 +111,9 @@ export function BillRow({ id, title, status, committee, proposed_at, proposer_na
       <div className="bill-row-vote-col">
         {vote ? (
           <VoteBar vote={vote} />
-        ) : (
+        ) : status === '계류' ? (
           <PendingGauge days={days} />
-        )}
+        ) : null}
       </div>
 
       {/* Col 4: Date */}
@@ -139,17 +139,18 @@ export function BillRow({ id, title, status, committee, proposed_at, proposer_na
 }
 
 function VoteBar({ vote }: { vote: VoteData }) {
-  const total = (vote.yes_count ?? 0) + (vote.no_count ?? 0) + (vote.abstain_count ?? 0)
+  const total = (vote.yes_count ?? 0) + (vote.no_count ?? 0) + (vote.abstain_count ?? 0) + (vote.absent_count ?? 0)
   if (total === 0) return null
 
   const pct = (n: number) => `${((n / total) * 100).toFixed(1)}%`
 
   return (
     <div>
-      <div style={{ display: 'flex', height: 6, gap: 1, marginBottom: 7, background: 'rgba(26,25,22,.06)' }}>
+      <div style={{ display: 'flex', height: 6, gap: 1, marginBottom: 7 }}>
         {vote.yes_count > 0 && <div style={{ width: pct(vote.yes_count), background: 'var(--pu)' }} />}
         {vote.no_count > 0 && <div style={{ width: pct(vote.no_count), background: 'var(--st-fail)' }} />}
         {vote.abstain_count > 0 && <div style={{ width: pct(vote.abstain_count), background: 'rgba(138,132,120,0.55)' }} />}
+        {vote.absent_count > 0 && <div style={{ width: pct(vote.absent_count), background: 'rgba(26,25,22,.08)' }} />}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
         <span><span style={{ color: 'var(--t3)', fontSize: 10 }}>찬 </span><span style={{ color: 'var(--pu)' }}>{vote.yes_count}</span></span>
