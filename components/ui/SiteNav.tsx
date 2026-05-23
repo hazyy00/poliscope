@@ -11,6 +11,8 @@ const NAV_LINKS = [
 export function SiteNav() {
   const pathname = usePathname()
 
+  if (pathname === '/') return null
+
   return (
     <nav style={{
       position: 'sticky', top: 0, zIndex: 100,

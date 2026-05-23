@@ -17,7 +17,7 @@ const STANCE_MAP: Record<string, string> = {
 // Vercel cron secret 검증
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -93,7 +93,7 @@ export async function GET(req: Request) {
     })
   } catch (err) {
     console.error('[cron/sync-votes]', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
   }
 }
 

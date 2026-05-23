@@ -36,7 +36,7 @@ function normalizeDate(raw: string | null | undefined): string | null {
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, bills: bills.length, since: full ? 'full' : since })
   } catch (err) {
     console.error('[cron/sync-bills]', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
   }
 }
 
