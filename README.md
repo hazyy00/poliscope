@@ -43,8 +43,8 @@ PoliScope는 이 데이터를 한곳에서 쉽게 검색할 수 있도록 정리
 **백엔드 및 인프라**
 - Supabase (PostgreSQL + pgvector)
 - Upstash Redis (캐싱)
-- GitHub Actions (매일 새벽 3시 데이터 수집 크론잡)
-- Vercel (배포)
+- Vercel Cron (매일 KST 10:00~11:00 자동 수집)
+- Vercel (배포, Vercel Cron으로 매일 자동 데이터 수집)
 
 **AI**
 - Claude Haiku: 법안 배치 요약 (사전 생성, 비용 최적화)
@@ -99,6 +99,10 @@ ANTHROPIC_API_KEY=
 # 발급: https://upstash.com -> Redis 데이터베이스 생성
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
+
+# Vercel Cron 인증 (임의의 긴 랜덤 문자열로 설정)
+# Vercel 대시보드에서 Production + Preview 환경에만 등록, Development 제외
+CRON_SECRET=
 ```
 
 ---
@@ -136,15 +140,15 @@ python3 scripts/validate_data.py
 
 ### 일별 증분 수집
 
-GitHub Actions가 매일 새벽 3시(KST)에 자동 실행합니다. 수동으로 실행하려면:
+Vercel Cron이 매일 자동 실행합니다 (`vercel.json` 스케줄 참조).
 
-```bash
-python3 scripts/collect_bills.py --since 2024-01-01
-python3 scripts/collect_votes.py --since 2024-01-01
-```
+| 엔드포인트 | 스케줄 (KST) | 역할 |
+|------------|--------------|------|
+| `/api/cron/sync-bills` | 10:00 | 법안 목록 동기화 |
+| `/api/cron/sync-votes` | 10:30 | 표결 기록 동기화 |
+| `/api/cron/classify-bills` | 11:00 | 미분류 법안 AI 카테고리 분류 |
 
-GitHub Actions 자동 실행을 위해 Repository > Settings > Secrets에 아래 항목을 등록해야 합니다:
-`ASSEMBLY_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+Vercel 대시보드 > Project Settings > Environment Variables에 `CRON_SECRET`을 등록해야 크론이 인증됩니다.
 
 ---
 
@@ -169,7 +173,12 @@ poliscope/
 │   ├── members/                # 의원 검색 및 프로필
 │   ├── bills/                  # 법안 목록·상세 (표결 포함, /votes는 redirect됨)
 │   ├── votes/                  # 레거시 (next.config.js에서 /bills로 301 redirect)
-│   └── api/                    # API Routes
+│   └── api/
+│       ├── cron/               # Vercel Cron 자동 수집
+│       │   ├── sync-bills/     # 법안 동기화 (KST 10:00)
+│       │   ├── sync-votes/     # 표결 동기화 (KST 10:30)
+│       │   └── classify-bills/ # AI 카테고리 분류 (KST 11:00)
+│       └── repair/             # 누락 데이터 보정 엔드포인트
 ├── components/
 │   ├── map/
 │   │   └── KoreaMap.tsx        # 인터랙티브 SVG 지도 (17개 시·도)
@@ -203,8 +212,24 @@ poliscope/
 
 - **1단계 ✅ 완료:** 데이터 파이프라인. 의원·법안·표결 데이터 매일 자동 수집
 - **2단계 ✅ 완료:** 검색·프로필 UI. 의원·법안 페이지 완성. `/votes`를 `/bills`에 흡수 (발의→심사→표결 단일 흐름)
-- **3단계 (진행 중):** AI 요약 레이어. 법안 요약, 페르소나별 해석, 유사 법안 추천, 큐레이션
+- **3단계 (진행 중):** AI 기능 순차 구현 (아래 참조)
 - **이후:** 트랙션에 따라 방향 결정 (Q&A, 커뮤니티, 보고서 등)
+
+### PoliScope AI 기능 로드맵
+
+PoliScope의 AI 기능은 3단계로 순차 구현합니다.
+
+**1단계 · 기본 AI 요약 (법안 상세 페이지)**
+
+모든 법안 상세 페이지에 AI 요약 섹션을 추가합니다. 법조문을 읽지 않아도 "이 법안이 무엇인지"를 한 단락으로 파악할 수 있도록 합니다. Claude Haiku 4.5 + 배치 API 사전생성 방식으로 비용을 최소화합니다.
+
+**2단계 · AI 가이드 페이지 (`/ai-guide`)**
+
+AI가 어떤 기준으로 요약하는지, 한계는 무엇인지, 오류는 어떻게 신고하는지를 공개하는 페이지입니다. 큐레이션 페이지 오픈 전에 먼저 만들어 신뢰 기반을 세웁니다.
+
+**3단계 · AI 큐레이션 페이지 (`/ai-picks`)**
+
+PoliScope가 직접 선별한 법안에 페르소나별 해석(직장인 / 자영업자 / 학생)과 심층 분석을 제공합니다. 고정 발행 주기 없이 본회의 표결 또는 상임위 통과 시점에 맞춰 이벤트 기반으로 업데이트합니다.
 
 ---
 
