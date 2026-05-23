@@ -2,7 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { AISummary, AISummaryPlaceholder } from '@/components/bills/AISummary'
-import { Cosponsors, type Cosponsor } from '@/components/bills/Cosponsors'
+import { CosponsorsModal, type Cosponsor } from '@/components/bills/CosponsorsModal'
 import { MemberVoteGrid, type MemberVoteRow } from '@/components/bills/MemberVoteGrid'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -255,7 +255,7 @@ export default async function BillDetailPage({ params }: Props) {
               <StatusBadge status={bill.status ?? '계류'} />
               {bill.committee && (
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--t3)', letterSpacing: '0.06em' }}>
-                  법안 #{bill.id} · {bill.committee}위원회
+                  법안 #{bill.id} · {bill.committee.endsWith('위원회') ? bill.committee : `${bill.committee}위원회`}
                 </span>
               )}
             </div>
@@ -270,27 +270,30 @@ export default async function BillDetailPage({ params }: Props) {
               marginTop: 18, display: 'flex', alignItems: 'center', gap: 22,
               fontSize: 12, color: 'var(--t2)', flexWrap: 'wrap',
             }}>
-              {(bill.pdf_url || bill.content_url) && (
-                <a
-                  href={(bill.pdf_url || bill.content_url)!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '4px 10px', border: '0.5px solid var(--bd)',
-                    fontFamily: 'var(--font-mono)', fontSize: 10,
-                    color: 'var(--t3)', textDecoration: 'none',
-                    letterSpacing: '0.05em', flexShrink: 0,
-                  }}
-                >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <rect x="1.5" y="0.5" width="6" height="9" rx="0.8" stroke="currentColor" strokeWidth="0.8"/>
-                    <path d="M3 3h4M3 5h4M3 7h2" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round"/>
-                  </svg>
-                  원문{bill.pdf_url ? ' PDF' : ''}
-                </a>
-              )}
-              {(bill.pdf_url || bill.content_url) && proposer && <span style={{ width: 1, height: 10, background: 'var(--bd)', flexShrink: 0 }} />}
+              {(() => {
+                const href = bill.content_url || `https://likms.assembly.go.kr/bill/billDetail.do?billId=${bill.id}`
+                return (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      padding: '4px 10px', border: '0.5px solid var(--bd)',
+                      fontFamily: 'var(--font-mono)', fontSize: 10,
+                      color: 'var(--t3)', textDecoration: 'none',
+                      letterSpacing: '0.05em', flexShrink: 0,
+                    }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <rect x="1.5" y="0.5" width="6" height="9" rx="0.8" stroke="currentColor" strokeWidth="0.8"/>
+                      <path d="M3 3h4M3 5h4M3 7h2" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round"/>
+                    </svg>
+                    원문 보기
+                  </a>
+                )
+              })()}
+              {proposer && <span style={{ width: 1, height: 10, background: 'var(--bd)', flexShrink: 0 }} />}
               {proposer && (
                 <Link href={`/members/${proposer.id}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', color: 'inherit' }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: 'var(--ivd)', flexShrink: 0, position: 'relative' }}>
@@ -302,7 +305,13 @@ export default async function BillDetailPage({ params }: Props) {
                       </div>
                     )}
                   </div>
-                  <span><span style={{ color: 'var(--t3)' }}>발의 </span>{proposer.name}</span>
+                  <span>
+                    <span style={{ color: 'var(--t3)' }}>발의 </span>
+                    {bill.proposer_names
+                      ? bill.proposer_names.split(',').map((s: string) => s.trim()).join(' · ')
+                      : proposer.name}
+                    {(bill.cosponsor_count ?? 0) > 0 && <span style={{ color: 'var(--t3)' }}> 외 {bill.cosponsor_count}명</span>}
+                  </span>
                 </Link>
               )}
               {proposer && bill.proposed_at && <span style={{ width: 1, height: 10, background: 'var(--bd)', flexShrink: 0 }} />}
@@ -322,13 +331,11 @@ export default async function BillDetailPage({ params }: Props) {
         </div>
 
         {/* Cosponsors */}
-        {cosponsors.length > 0 && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t3)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              공동발의 ({cosponsors.length}명)
-            </div>
-            <Cosponsors cosponsors={cosponsors as unknown as Cosponsor[]} />
-          </div>
+        {(bill.cosponsor_count ?? cosponsors.length) > 0 && (
+          <CosponsorsModal
+            cosponsors={cosponsors as unknown as Cosponsor[]}
+            totalCount={bill.cosponsor_count ?? cosponsors.length}
+          />
         )}
 
         {/* Outcome card — shown alone when vote data is unavailable */}

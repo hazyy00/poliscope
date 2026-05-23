@@ -24,26 +24,27 @@ export function BillStatusCards({ cards, activeStatus, totalCount }: Props) {
 
   function handleClick(value: string) {
     const params = new URLSearchParams(sp.toString())
-    if (value) {
-      params.set('status', value)
-    } else {
-      params.delete('status')
-    }
+    params.set('status', value)
     params.delete('page')
     router.push(`/bills?${params.toString()}`)
   }
 
   return (
     <div>
-      <div style={{
-        padding: '8px 18px',
-        border: '0.5px solid var(--bd)', borderBottom: 'none',
-        fontSize: 15, color: 'var(--t3)',
-        fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
-        userSelect: 'none',
-      }}>
+      <button
+        onClick={() => handleClick('all')}
+        style={{
+          padding: '8px 18px', width: '100%', textAlign: 'left',
+          border: '0.5px solid var(--bd)', borderBottom: 'none',
+          fontSize: 15, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
+          cursor: 'pointer', background: 'transparent',
+          color: activeStatus === 'all' ? 'var(--t1)' : 'var(--t3)',
+          outline: activeStatus === 'all' ? '1.5px solid var(--t1)' : 'none',
+          outlineOffset: -1,
+        }}
+      >
         전체 <span style={{ color: 'var(--t1)' }}>{totalCount.toLocaleString()}</span>건
-      </div>
+      </button>
     <div style={{ display: 'flex', border: '0.5px solid var(--bd)' }}>
       {cards.map((card, i) => {
         const isActive = activeStatus === card.value

@@ -10,9 +10,10 @@ interface Props {
 }
 
 const SORTS = [
-  { label: '최근 표결', value: 'voteDate' },
-  { label: '발의일순', value: 'proposeDate' },
-  { label: '접전순', value: 'contested' },
+  { label: '최근순', value: 'voteDate' },
+  { label: '찬성순', value: 'approval' },
+  { label: '저항순', value: 'resistance' },
+  { label: '공동발의순', value: 'cosponsors' },
 ]
 
 const CATEGORIES = [
@@ -97,12 +98,14 @@ export function BillFilterBar({ initialQ, initialCategory, initialSort }: Props)
       </div>
 
       {/* Row 2: 분야 pill */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+      <div style={{ display: 'flex', gap: 0, border: '0.5px solid var(--bd)' }}>
         <button
           onClick={() => handleCategory('')}
           style={{
-            flexShrink: 0, padding: '5px 12px', fontSize: 11,
-            letterSpacing: '0.03em', border: '0.5px solid var(--bd)',
+            flex: 1, padding: '10px 0', fontSize: 11,
+            letterSpacing: '0.03em',
+            border: 'none',
+            borderRight: '0.5px solid var(--bd)',
             background: !initialCategory ? 'var(--t1)' : 'var(--iv)',
             color: !initialCategory ? 'var(--iv)' : 'var(--t2)',
             cursor: 'pointer', whiteSpace: 'nowrap',
@@ -110,15 +113,17 @@ export function BillFilterBar({ initialQ, initialCategory, initialSort }: Props)
         >
           전체
         </button>
-        {CATEGORIES.map(cat => {
+        {CATEGORIES.map((cat, i) => {
           const isActive = initialCategory === cat
           return (
             <button
               key={cat}
               onClick={() => handleCategory(cat)}
               style={{
-                flexShrink: 0, padding: '5px 12px', fontSize: 11,
-                letterSpacing: '0.03em', border: '0.5px solid var(--bd)',
+                flex: 1, padding: '10px 0', fontSize: 11,
+                letterSpacing: '0.03em',
+                border: 'none',
+                borderLeft: '0.5px solid var(--bd)',
                 background: isActive ? 'var(--t1)' : 'var(--iv)',
                 color: isActive ? 'var(--iv)' : 'var(--t2)',
                 cursor: 'pointer', whiteSpace: 'nowrap',

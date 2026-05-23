@@ -27,6 +27,15 @@ function normalizeStatus(raw: string | null | undefined): string {
   return '계류'
 }
 
+function parseCosponsorCount(proposer: string | null | undefined, rstMonaCd: string | null | undefined): number {
+  if (!proposer) return 0
+  const m = proposer.match(/등\s*(\d+)인/)
+  if (!m) return 0
+  const total = parseInt(m[1])
+  const leaderCount = rstMonaCd ? rstMonaCd.split(',').filter(Boolean).length : 1
+  return total - leaderCount
+}
+
 function normalizeDate(raw: string | null | undefined): string | null {
   if (!raw || raw.length < 8) return null
   const v = raw.trim()
@@ -62,10 +71,12 @@ export async function GET(req: Request) {
           title,
           status: normalizeStatus(raw.PROC_RESULT || raw.PROC_RESULT_CD),
           committee: raw.COMMITTEE || raw.CURR_COMMITTEE || null,
-          proposer_id: raw.MONA_CD || null,
+          proposer_id: raw.RST_MONA_CD?.split(',')[0]?.trim() || raw.MONA_CD || null,
+          proposer_names: raw.RST_PROPOSER || null,
           proposed_at: normalizeDate(raw.PROPOSE_DT),
           passed_at: normalizeDate(raw.PROC_DT) || null,
           content_url: raw.LINK_URL || raw.DETAIL_LINK || null,
+          cosponsor_count: parseCosponsorCount(raw.PROPOSER, raw.RST_MONA_CD),
         }
       })
       .filter((b): b is NonNullable<typeof b> => b !== null)

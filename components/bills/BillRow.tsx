@@ -16,7 +16,9 @@ interface Props {
   committee: string | null
   proposed_at: string | null
   proposer_name: string | null
+  proposer_names: string | null
   proposer_party: string | null
+  cosponsor_count?: number
   vote?: VoteData
   today: string
 }
@@ -30,7 +32,7 @@ const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
   '철회':    { color: 'var(--st-drop)', bg: 'var(--st-drop-bg)' },
 }
 
-export function BillRow({ id, title, status, committee, proposed_at, proposer_name, proposer_party, vote, today }: Props) {
+export function BillRow({ id, title, status, committee, proposed_at, proposer_name, proposer_names, proposer_party, cosponsor_count, vote, today }: Props) {
   const st = STATUS_STYLE[status] ?? { color: 'var(--t3)', bg: 'var(--ivd)' }
 
   const todayMs = new Date(today).getTime()
@@ -40,10 +42,20 @@ export function BillRow({ id, title, status, committee, proposed_at, proposer_na
   const shortTitle = title.length > 70 ? title.slice(0, 70) + '…' : title
   const shortCommittee = committee ? (committee.length > 12 ? committee.slice(0, 12) + '…' : committee) : null
 
+  const displayName = proposer_names
+    ? proposer_names.split(',').map(s => s.trim()).join(' · ')
+    : proposer_name
+  const proposerLabel = displayName
+    ? cosponsor_count && cosponsor_count > 0
+      ? `${displayName} 외 ${cosponsor_count}명`
+      : displayName
+    : null
+
+  const committeeLabel = shortCommittee ? (committee?.endsWith('위원회') ? shortCommittee : `${shortCommittee}위원회`) : null
   const metaParts = [
     `#${id.slice(-6)}`,
-    proposer_name,
-    shortCommittee ? `${shortCommittee}위원회` : null,
+    proposerLabel,
+    committeeLabel,
   ].filter(Boolean)
 
   return (
@@ -101,7 +113,7 @@ export function BillRow({ id, title, status, committee, proposed_at, proposer_na
           {metaParts.map((part, i) => (
             <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {i > 0 && <span style={{ width: 1, height: 9, background: 'var(--bd)', display: 'inline-block' }} />}
-              <span style={i === 2 ? { color: 'var(--pu)' } : undefined}>{part}</span>
+              <span style={part === committeeLabel ? { color: 'var(--pu)' } : undefined}>{part}</span>
             </span>
           ))}
         </div>
@@ -132,7 +144,9 @@ export function BillRow({ id, title, status, committee, proposed_at, proposer_na
             </div>
             <div style={{ fontSize: 10, color: 'var(--t3)', letterSpacing: '0.04em', marginTop: 3 }}>발의</div>
           </>
-        ) : null}
+        ) : (
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--t3)' }}>—</div>
+        )}
       </div>
     </Link>
   )

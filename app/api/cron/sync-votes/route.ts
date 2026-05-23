@@ -45,6 +45,17 @@ export async function GET(req: Request) {
         if (filtered.length > 0) {
           await upsertInBatches(supabase, 'member_votes', filtered, 'vote_id,member_id')
         }
+
+        // votes.absent_count를 member_votes 기반으로 역산하여 업데이트
+        const absentCounts = filtered
+          .filter(r => r.stance === '불참')
+          .reduce((acc, r) => {
+            acc[r.vote_id] = (acc[r.vote_id] ?? 0) + 1
+            return acc
+          }, {} as Record<string, number>)
+        for (const [vote_id, count] of Object.entries(absentCounts)) {
+          await supabase.from('votes').update({ absent_count: count }).eq('id', vote_id)
+        }
       }
     }
 
@@ -56,19 +67,31 @@ export async function GET(req: Request) {
     if (votedBills.length > 0) {
       const { data: existing } = await supabase
         .from('bills')
-        .select('id')
+        .select('id, passed_at, content_url')
         .in('id', votedBills.map(v => v!.id))
-      const existingIds = new Set((existing ?? []).map((b: { id: string }) => b.id))
+      const existingMap = new Map((existing ?? []).map((b: { id: string; passed_at: string | null; content_url: string | null }) => [b.id, b]))
       const newBills = votedBills
-        .filter(v => !existingIds.has(v!.id))
+        .filter(v => !existingMap.has(v!.id))
         .map(v => ({
           id: v!.id,
           title: (v!.title ?? '').replace(/\s*\([^)]+\)\s*$/, '').trim() || v!.title,
           status: RESULT_TO_STATUS[v!.result!],
           passed_at: v!.voted_at ? v!.voted_at.slice(0, 10) : null,
+          content_url: v!.link_url ?? null,
         }))
       if (newBills.length > 0) {
         await upsertInBatches(supabase, 'bills', newBills, 'id')
+      }
+      // 기존 bill 중 passed_at 또는 content_url이 null인 것 업데이트
+      for (const v of votedBills) {
+        const existing = existingMap.get(v!.id)
+        if (!existing) continue
+        const updates: Record<string, string> = {}
+        if (!existing.passed_at && v!.voted_at) updates.passed_at = v!.voted_at.slice(0, 10)
+        if (!existing.content_url && v!.link_url) updates.content_url = v!.link_url
+        if (Object.keys(updates).length > 0) {
+          await supabase.from('bills').update(updates).eq('id', v!.id)
+        }
       }
     }
 
@@ -139,6 +162,7 @@ function parseVote(raw: Record<string, string>) {
     no_count: parseInt(raw.NO_TCNT ?? '0') || 0,
     abstain_count: parseInt(raw.BLANK_TCNT ?? '0') || 0,
     absent_count: 0,
+    link_url: raw.LINK_URL || null,
   }
 }
 

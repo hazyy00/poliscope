@@ -13,11 +13,12 @@ export interface Cosponsor {
 
 interface Props {
   cosponsors: Cosponsor[]
+  totalCount?: number
 }
 
-export function Cosponsors({ cosponsors }: Props) {
+export function Cosponsors({ cosponsors, totalCount }: Props) {
   const visible = cosponsors.slice(0, 10)
-  const overflow = cosponsors.length - 10
+  const overflow = (totalCount ?? cosponsors.length) - 10
 
   if (cosponsors.length === 0) {
     return <p style={{ color: 'var(--t3)', fontSize: 13 }}>공동발의자 없음</p>

@@ -44,12 +44,9 @@ em.fell {
     grid-template-columns: repeat(14, 12px) !important;
   }
   .bill-row-grid {
-    grid-template-columns: 90px 1fr !important;
+    grid-template-columns: 90px 1fr 100px !important;
   }
   .bill-row-vote-col {
-    display: none !important;
-  }
-  .bill-row-date-col {
     display: none !important;
   }
 }

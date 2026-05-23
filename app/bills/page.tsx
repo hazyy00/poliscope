@@ -51,7 +51,9 @@ type BillWithVote = {
   committee: string | null
   proposed_at: string | null
   proposer_name: string | null
+  proposer_names: string | null
   proposer_party: string | null
+  cosponsor_count: number
   vote?: {
     yes_count: number
     no_count: number
@@ -113,13 +115,15 @@ export default async function BillsPage({ searchParams }: Props) {
       committee: b.committee,
       proposed_at: b.proposed_at,
       proposer_name: proposer?.name ?? null,
+      proposer_names: b.proposer_names ?? null,
       proposer_party: proposer?.party ?? null,
+      cosponsor_count: b.cosponsor_count ?? 0,
       vote: v ? {
         yes_count: v.yes_count ?? 0,
         no_count: v.no_count ?? 0,
         abstain_count: v.abstain_count ?? 0,
         absent_count: v.absent_count ?? 0,
-        voted_at: voteDate ?? v.voted_at ?? null,
+        voted_at: voteDate ?? v.voted_at ?? b.proposed_at ?? null,
       } : (voteDate ? { yes_count: 0, no_count: 0, abstain_count: 0, absent_count: 0, voted_at: voteDate } : undefined),
     }
   }
@@ -128,52 +132,37 @@ export default async function BillsPage({ searchParams }: Props) {
   let bills: BillWithVote[] = []
   let totalCount = 0
 
-  if (sort === 'proposeDate') {
-    let query = supabase
-      .from('bills')
-      .select('id, title, status, committee, proposed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
-      .eq('is_hidden', false)
-      .order('proposed_at', { ascending: false })
-      .range(offset, offset + PAGE_SIZE - 1)
-
-    if (statusFilter) query = query.in('status', statusFilter)
-    if (sp.q) query = query.ilike('title', `%${sp.q}%`)
-    if (category) query = query.eq('category', category)
-
-    const { data, count } = await query
-    totalCount = count ?? 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bills = (data ?? []).map((b: any) => normalizeRow(b))
-  } else if (sort === 'voteDate') {
+  if (sort === 'voteDate') {
     // Sort by passed_at as vote/decision date proxy
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('bills')
-      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
+      .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
       .eq('is_hidden', false)
-      .order(statusGroup === 'pending' ? 'proposed_at' : 'passed_at', { ascending: false })
+      .order(statusGroup === 'pending' ? 'proposed_at' : 'passed_at', { ascending: false, nullsFirst: false })
+      .order('title', { ascending: true })
       .range(offset, offset + PAGE_SIZE - 1)
 
     if (statusFilter) q = q.in('status', statusFilter)
-    else q = q.not('status', 'eq', '계류').not('passed_at', 'is', null)
+    else if (statusGroup !== 'all') q = q.not('status', 'eq', '계류').not('passed_at', 'is', null)
     if (sp.q) q = q.ilike('title', `%${sp.q}%`)
     if (category) q = q.eq('category', category)
 
     const { data: vdData, count: vdCount } = await q
     totalCount = vdCount ?? 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bills = (vdData ?? []).map((b: any) => normalizeRow(b, b.passed_at ?? null))
-  } else {
-    // contested: fetch all voted bills, compute contest score, sort in memory
+    const vdBills = (vdData ?? []).map((b: any) => normalizeRow(b, b.passed_at ?? null))
+    bills = vdBills
+  } else if (sort === 'approval') {
+    // 찬성순: yes_count 내림차순, 인메모리 처리
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: allBills } = await (supabase as any)
       .from('bills')
-      .select('id, title, status, committee, proposed_at, passed_at, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
+      .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
       .eq('is_hidden', false)
       .not('passed_at', 'is', null)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let withVotes = ((allBills ?? []) as any[])
+    let withApproval = ((allBills ?? []) as any[])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((b: any) => {
         const proposer = Array.isArray(b.members) ? b.members[0] : b.members
@@ -181,15 +170,12 @@ export default async function BillsPage({ searchParams }: Props) {
         const meaningful = votesArr.filter((x: any) => (x.yes_count ?? 0) + (x.no_count ?? 0) + (x.abstain_count ?? 0) > 0)
         const statusToResult: Record<string, string> = { '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기' }
         const targetResult = statusToResult[b.status ?? '']
-        const cMatching = targetResult ? meaningful.filter((x: any) => x.result === targetResult) : []
-        const cByTotal = (arr: any[]) => arr.sort((a: any, c: any) =>
+        const matching = targetResult ? meaningful.filter((x: any) => x.result === targetResult) : []
+        const byTotal = (arr: any[]) => arr.sort((a: any, c: any) =>
           ((c.yes_count??0)+(c.no_count??0)+(c.abstain_count??0)+(c.absent_count??0)) -
           ((a.yes_count??0)+(a.no_count??0)+(a.abstain_count??0)+(a.absent_count??0))
         )[0] ?? null
-        const v = (cMatching.length > 0 ? cByTotal([...cMatching]) : null) ?? cByTotal([...meaningful]) ?? null
-        const yes = v?.yes_count ?? 0
-        const no = v?.no_count ?? 0
-        const score = (yes + no) > 0 ? Math.abs(yes - no) / (yes + no) : Infinity
+        const v = (matching.length > 0 ? byTotal([...matching]) : null) ?? byTotal([...meaningful]) ?? null
         return {
           id: b.id as string,
           title: b.title as string,
@@ -197,29 +183,110 @@ export default async function BillsPage({ searchParams }: Props) {
           committee: b.committee as string | null,
           proposed_at: b.proposed_at as string | null,
           proposer_name: (proposer?.name ?? null) as string | null,
+          proposer_names: (b.proposer_names ?? null) as string | null,
           proposer_party: (proposer?.party ?? null) as string | null,
+          cosponsor_count: (b.cosponsor_count ?? 0) as number,
           vote: v ? {
-            yes_count: yes, no_count: no,
-            abstain_count: v.abstain_count ?? 0, absent_count: v.absent_count ?? 0,
+            yes_count: v.yes_count ?? 0,
+            no_count: v.no_count ?? 0,
+            abstain_count: v.abstain_count ?? 0,
+            absent_count: v.absent_count ?? 0,
             voted_at: (b.passed_at ?? v.voted_at ?? null) as string | null,
           } : undefined,
-          _score: score,
+          _score: v?.yes_count ?? 0,
         }
       })
       .filter((b: BillWithVote & { _score: number }) => {
-        if (b._score === Infinity) return false
         if (statusFilter && !statusFilter.includes(b.status ?? '')) return false
         if (sp.q && !b.title?.toLowerCase().includes(sp.q.toLowerCase())) return false
         if (category && (b as any).category !== category) return false
         return true
       })
-      .sort((a: { _score: number }, b: { _score: number }) => a._score - b._score)
+      .sort((a: { _score: number; title: string }, b: { _score: number; title: string }) =>
+        b._score !== a._score ? b._score - a._score : a.title.localeCompare(b.title, 'ko')
+      )
 
-    totalCount = withVotes.length
-    bills = withVotes.slice(offset, offset + PAGE_SIZE)
+    totalCount = withApproval.length
+    bills = withApproval.slice(offset, offset + PAGE_SIZE)
+  } else if (sort === 'resistance') {
+    // 저항순: 반대+기권+불참 합계 내림차순, 인메모리 처리
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: allBills } = await (supabase as any)
+      .from('bills')
+      .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
+      .eq('is_hidden', false)
+      .not('passed_at', 'is', null)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let withResist = ((allBills ?? []) as any[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((b: any) => {
+        const proposer = Array.isArray(b.members) ? b.members[0] : b.members
+        const votesArr = Array.isArray(b.votes) ? b.votes : (b.votes ? [b.votes] : [])
+        const meaningful = votesArr.filter((x: any) => (x.yes_count ?? 0) + (x.no_count ?? 0) + (x.abstain_count ?? 0) > 0)
+        const statusToResult: Record<string, string> = { '가결': '가결', '수정가결': '수정가결', '부결': '부결', '폐기': '폐기' }
+        const targetResult = statusToResult[b.status ?? '']
+        const matching = targetResult ? meaningful.filter((x: any) => x.result === targetResult) : []
+        const byTotal = (arr: any[]) => arr.sort((a: any, c: any) =>
+          ((c.yes_count??0)+(c.no_count??0)+(c.abstain_count??0)+(c.absent_count??0)) -
+          ((a.yes_count??0)+(a.no_count??0)+(a.abstain_count??0)+(a.absent_count??0))
+        )[0] ?? null
+        const v = (matching.length > 0 ? byTotal([...matching]) : null) ?? byTotal([...meaningful]) ?? null
+        const resistScore = (v?.no_count ?? 0) + (v?.abstain_count ?? 0) + (v?.absent_count ?? 0)
+        return {
+          id: b.id as string,
+          title: b.title as string,
+          status: b.status as string | null,
+          committee: b.committee as string | null,
+          proposed_at: b.proposed_at as string | null,
+          proposer_name: (proposer?.name ?? null) as string | null,
+          proposer_names: (b.proposer_names ?? null) as string | null,
+          proposer_party: (proposer?.party ?? null) as string | null,
+          cosponsor_count: (b.cosponsor_count ?? 0) as number,
+          vote: v ? {
+            yes_count: v.yes_count ?? 0,
+            no_count: v.no_count ?? 0,
+            abstain_count: v.abstain_count ?? 0,
+            absent_count: v.absent_count ?? 0,
+            voted_at: (b.passed_at ?? v.voted_at ?? null) as string | null,
+          } : undefined,
+          _score: resistScore,
+        }
+      })
+      .filter((b: BillWithVote & { _score: number }) => {
+        if (statusFilter && !statusFilter.includes(b.status ?? '')) return false
+        if (sp.q && !b.title?.toLowerCase().includes(sp.q.toLowerCase())) return false
+        if (category && (b as any).category !== category) return false
+        return true
+      })
+      .sort((a: { _score: number; title: string }, b: { _score: number; title: string }) =>
+        b._score !== a._score ? b._score - a._score : a.title.localeCompare(b.title, 'ko')
+      )
+
+    totalCount = withResist.length
+    bills = withResist.slice(offset, offset + PAGE_SIZE)
+  } else {
+    // 공동발의순: cosponsor_count 내림차순, DB 레벨 정렬
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any = supabase
+      .from('bills')
+      .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
+      .eq('is_hidden', false)
+      .order('cosponsor_count', { ascending: false, nullsFirst: false })
+      .order('title', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1)
+
+    if (statusFilter) q = q.in('status', statusFilter)
+    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (category) q = q.eq('category', category)
+
+    const { data: csData, count: csCount } = await q
+    totalCount = csCount ?? 0
+    bills = (csData ?? []).map((b: any) => normalizeRow(b, b.passed_at ?? null))
   }
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
+
 
   function buildHref(p: number) {
     const params = new URLSearchParams()
@@ -284,20 +351,11 @@ export default async function BillsPage({ searchParams }: Props) {
 
         {/* Result meta */}
         <div style={{
-          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           paddingBottom: 10, borderBottom: '0.5px solid var(--bd)',
           fontSize: 11, color: 'var(--t3)',
           fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
-          marginBottom: 0,
         }}>
-          <div>
-            <span style={{ color: 'var(--t1)' }}>{totalCount.toLocaleString()}</span>건 표시
-          </div>
-          <div style={{ display: 'flex', gap: 22 }}>
-            {['상태', '법안', '표결 결과', '날짜'].map(l => (
-              <span key={l} style={{ fontSize: 9, opacity: 0.6, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{l}</span>
-            ))}
-          </div>
+          <span style={{ color: 'var(--t1)' }}>{totalCount.toLocaleString()}</span>건 표시
         </div>
 
         {bills.length > 0 ? (
@@ -311,16 +369,13 @@ export default async function BillsPage({ searchParams }: Props) {
                 committee={bill.committee}
                 proposed_at={bill.proposed_at}
                 proposer_name={bill.proposer_name}
+                proposer_names={bill.proposer_names}
                 proposer_party={bill.proposer_party}
+                cosponsor_count={bill.cosponsor_count}
                 vote={bill.vote}
                 today={today}
               />
             ))}
-          </div>
-        ) : sort === 'contested' && totalCount === 0 ? (
-          <div style={{ textAlign: 'center', color: 'var(--t3)', padding: '80px 0', fontSize: 15 }}>
-            <div style={{ marginBottom: 8 }}>접전 데이터를 집계 중입니다.</div>
-            <div style={{ fontSize: 13 }}>법안-표결 연결이 완료되면 표시됩니다.</div>
           </div>
         ) : (
           <div style={{ textAlign: 'center', color: 'var(--t3)', padding: '80px 0', fontSize: 15 }}>
