@@ -153,13 +153,19 @@ export default async function BillsPage({ searchParams }: Props) {
     const vdBills = (vdData ?? []).map((b: any) => normalizeRow(b, b.passed_at ?? null))
     bills = vdBills
   } else if (sort === 'approval') {
-    // 찬성순: yes_count 내림차순, 인메모리 처리
+    // 찬성순: yes_count 내림차순, 인메모리 정렬 (필터는 DB 레벨 적용)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: allBills } = await (supabase as any)
+    let q: any = supabase
       .from('bills')
       .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
       .eq('is_hidden', false)
       .not('passed_at', 'is', null)
+
+    if (statusFilter) q = q.in('status', statusFilter)
+    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (category) q = q.eq('category', category)
+
+    const { data: allBills } = await q
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let withApproval = ((allBills ?? []) as any[])
@@ -196,12 +202,6 @@ export default async function BillsPage({ searchParams }: Props) {
           _score: v?.yes_count ?? 0,
         }
       })
-      .filter((b: BillWithVote & { _score: number }) => {
-        if (statusFilter && !statusFilter.includes(b.status ?? '')) return false
-        if (sp.q && !b.title?.toLowerCase().includes(sp.q.toLowerCase())) return false
-        if (category && (b as any).category !== category) return false
-        return true
-      })
       .sort((a: { _score: number; title: string }, b: { _score: number; title: string }) =>
         b._score !== a._score ? b._score - a._score : a.title.localeCompare(b.title, 'ko')
       )
@@ -209,13 +209,19 @@ export default async function BillsPage({ searchParams }: Props) {
     totalCount = withApproval.length
     bills = withApproval.slice(offset, offset + PAGE_SIZE)
   } else if (sort === 'resistance') {
-    // 저항순: 반대+기권+불참 합계 내림차순, 인메모리 처리
+    // 저항순: 반대+기권+불참 합계 내림차순, 인메모리 정렬 (필터는 DB 레벨 적용)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: allBills } = await (supabase as any)
+    let q: any = supabase
       .from('bills')
       .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)')
       .eq('is_hidden', false)
       .not('passed_at', 'is', null)
+
+    if (statusFilter) q = q.in('status', statusFilter)
+    if (sp.q) q = q.ilike('title', `%${sp.q}%`)
+    if (category) q = q.eq('category', category)
+
+    const { data: allBills } = await q
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let withResist = ((allBills ?? []) as any[])
@@ -252,12 +258,6 @@ export default async function BillsPage({ searchParams }: Props) {
           } : undefined,
           _score: resistScore,
         }
-      })
-      .filter((b: BillWithVote & { _score: number }) => {
-        if (statusFilter && !statusFilter.includes(b.status ?? '')) return false
-        if (sp.q && !b.title?.toLowerCase().includes(sp.q.toLowerCase())) return false
-        if (category && (b as any).category !== category) return false
-        return true
       })
       .sort((a: { _score: number; title: string }, b: { _score: number; title: string }) =>
         b._score !== a._score ? b._score - a._score : a.title.localeCompare(b.title, 'ko')
