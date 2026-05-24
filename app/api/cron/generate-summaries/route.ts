@@ -76,7 +76,6 @@ export async function GET(req: NextRequest) {
     .eq('is_hidden', false)
     .in('status', ['가결', '수정가결'])
     .is('ai_summary', null)
-    .not('content_url', 'is', null)
     .order('passed_at', { ascending: false })
     .limit(BATCH_SIZE)
 
@@ -92,7 +91,7 @@ export async function GET(req: NextRequest) {
     const chunk = bills.slice(i, i + CONCURRENCY) as BillRow[]
 
     await Promise.all(chunk.map(async (bill) => {
-      const sourceText = await scrapeBillText(bill.content_url!)
+      const sourceText = await scrapeBillText(bill.id, bill.content_url)
 
       if (!sourceText) {
         // 스크래핑 실패 → ai_summary에 sentinel 저장 (반복 시도 방지)

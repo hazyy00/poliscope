@@ -1,37 +1,8 @@
-export async function scrapeBillText(contentUrl: string): Promise<string | null> {
-  try {
-    const res = await fetch(contentUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PoliScope/1.0)' },
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (!res.ok) return null
+// 국회 의안정보시스템(LIKMS)과 PAL은 완전 클라이언트 렌더링이라
+// 서버사이드 정적 스크래핑으로 제안이유/주요내용 본문을 가져올 수 없음.
+// 현재는 신뢰할 수 있는 원문 소스가 없는 상태.
+// TODO: 법안 원문 제공 API 또는 HWP/PDF 다운로드 경로 확인 필요.
 
-    const html = await res.text()
-
-    // Strip tags
-    const text = html
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-      .replace(/\s+/g, ' ')
-      .trim()
-
-    // 1순위: 제안이유 및 주요내용 섹션
-    const combined = text.match(/제안이유\s*및\s*주요내용\s+([\s\S]{200,6000}?)(?=붙임|참고사항|별표|$)/)
-    if (combined) return combined[1].trim().slice(0, 4000)
-
-    // 2순위: 제안이유 섹션
-    const reason = text.match(/제안이유\s+([\s\S]{100,4000}?)(?=주요내용|붙임|참고|$)/)
-    // 3순위: 주요내용 섹션
-    const main = text.match(/주요내용\s+([\s\S]{100,3000}?)(?=붙임|참고|별표|$)/)
-
-    const extracted = [reason?.[1], main?.[1]].filter(Boolean).join('\n\n').trim()
-    if (extracted.length > 100) return extracted.slice(0, 4000)
-
-    return null
-  } catch {
-    return null
-  }
+export async function scrapeBillText(_billId: string, _contentUrl: string | null): Promise<string | null> {
+  return null
 }
