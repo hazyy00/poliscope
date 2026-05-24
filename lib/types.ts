@@ -46,12 +46,8 @@ export interface Bill {
 export interface AiSummaryJson {
   summary: string
   key_points: string[]
-  personas: {
-    worker: string
-    selfemployed: string
-    student: string
-  }
-  confidence: number
+  source_spans: string[]
+  _no_source?: true
 }
 
 export interface Vote {

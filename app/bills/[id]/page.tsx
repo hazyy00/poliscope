@@ -1,7 +1,7 @@
 import { createServerClient } from '@/lib/supabase'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { PartyBadge } from '@/components/ui/PartyBadge'
-import { AISummary, AISummaryPlaceholder } from '@/components/bills/AISummary'
+import { AISummary, AISummaryPlaceholder, AISummaryNoSource } from '@/components/bills/AISummary'
 import { CosponsorsModal, type Cosponsor } from '@/components/bills/CosponsorsModal'
 import { MemberVoteGrid, type MemberVoteRow } from '@/components/bills/MemberVoteGrid'
 import { notFound } from 'next/navigation'
@@ -324,8 +324,10 @@ export default async function BillDetailPage({ params }: Props) {
 
         {/* AI Summary — always shown */}
         <div style={{ marginBottom: 36 }}>
-          {aiSummary && bill.ai_confidence
-            ? <AISummary summary={aiSummary} confidence={bill.ai_confidence} contentUrl={bill.content_url} />
+          {aiSummary && !aiSummary._no_source
+            ? <AISummary summary={aiSummary} billId={bill.id} contentUrl={bill.content_url} />
+            : aiSummary?._no_source
+            ? <AISummaryNoSource />
             : <AISummaryPlaceholder />
           }
         </div>

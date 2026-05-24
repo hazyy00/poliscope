@@ -1,5 +1,33 @@
-import { PersonaTabs } from './PersonaTabs'
+'use client'
+
+import { useState } from 'react'
 import type { AiSummaryJson } from '@/lib/types'
+
+export function AISummaryNoSource() {
+  return (
+    <div style={{
+      padding: '24px 28px',
+      border: '0.5px solid var(--bd)', background: 'var(--ivd)',
+      display: 'grid', gridTemplateColumns: '180px 1fr', gap: 32,
+    }}>
+      <div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 10,
+          letterSpacing: '0.1em', color: 'var(--pu)',
+          textTransform: 'uppercase',
+        }}>AI 요약</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontFamily: 'var(--font-serif)', fontWeight: 300, color: 'var(--t3)' }}>
+          원문을 찾을 수 없어 요약을 제공하지 못했습니다.{' '}
+          <a href="/ai-guide" style={{ color: 'var(--t3)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            AI 요약 방식 보기
+          </a>
+        </span>
+      </div>
+    </div>
+  )
+}
 
 export function AISummaryPlaceholder() {
   return (
@@ -26,11 +54,20 @@ export function AISummaryPlaceholder() {
 
 interface Props {
   summary: AiSummaryJson
-  confidence: number
+  billId: string
   contentUrl: string | null
 }
 
-export function AISummary({ summary, confidence, contentUrl }: Props) {
+export function AISummary({ summary, billId, contentUrl }: Props) {
+  const [reported, setReported] = useState(false)
+  const [showSources, setShowSources] = useState(false)
+
+  async function handleReport() {
+    if (reported) return
+    await fetch(`/api/bills/${billId}/report`, { method: 'POST' })
+    setReported(true)
+  }
+
   return (
     <div style={{
       padding: '24px 28px',
@@ -61,24 +98,54 @@ export function AISummary({ summary, confidence, contentUrl }: Props) {
           </ul>
         )}
 
-        {summary.personas && (
-          <div style={{ marginBottom: 16 }}>
-            <PersonaTabs personas={summary.personas} />
+        {summary.source_spans.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <button
+              onClick={() => setShowSources(s => !s)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                fontSize: 11, color: 'var(--t3)', fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              원문 근거 {showSources ? '▲ 숨기기' : '▼ 펼치기'}
+            </button>
+            {showSources && (
+              <ul style={{ margin: '8px 0 0', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {summary.source_spans.map((span, i) => (
+                  <li key={i} style={{ fontSize: 12, color: 'var(--t3)', lineHeight: 1.5, fontStyle: 'italic' }}>"{span}"</li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
         <div style={{
-          display: 'flex', gap: 18,
+          display: 'flex', alignItems: 'center', gap: 18,
           fontSize: 11, color: 'var(--t3)',
           fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
           borderTop: '0.5px solid var(--bd)', paddingTop: 12,
         }}>
-          <span>신뢰도 {(confidence * 100).toFixed(0)}% / 100</span>
           {contentUrl && (
-            <a href={contentUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--pu)', textDecoration: 'underline', textUnderlineOffset: 3, marginLeft: 'auto' }}>
+            <a href={contentUrl} target="_blank" rel="noopener noreferrer"
+              style={{ color: 'var(--pu)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
               원문 확인하기 →
             </a>
           )}
+          <a href="/ai-guide" style={{ color: 'var(--t3)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            AI 요약 방식 보기
+          </a>
+          <button
+            onClick={handleReport}
+            disabled={reported}
+            style={{
+              marginLeft: 'auto', background: 'none', border: 'none', cursor: reported ? 'default' : 'pointer',
+              padding: 0, fontSize: 11, color: reported ? 'var(--t3)' : 'var(--t2)',
+              fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
+            }}
+          >
+            {reported ? '신고 접수됨' : '이 요약이 틀렸어요'}
+          </button>
         </div>
         <p style={{ fontSize: 11, color: 'var(--t3)', margin: '8px 0 0' }}>
           AI가 생성한 요약입니다. 법적 판단의 근거로 사용하지 마세요.
