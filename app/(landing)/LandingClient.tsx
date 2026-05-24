@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { KoreaMap } from '@/components/map/KoreaMap'
 import { REGIONS_DATA } from '@/lib/regions'
+import { getPartyColor } from '@/lib/utils'
 
 let introPlayed = false
 
@@ -540,7 +541,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
               const region = hoveredRegion ? REGIONS_DATA.find(r => r.name === hoveredRegion || r.short === hoveredRegion) : null
               if (!region) {
                 return (
-                  <div style={{ borderLeft: '.5px solid var(--bd)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 0, background: 'var(--ivd)', overflowY: 'auto' }}>
+                  <div style={{ borderLeft: '.5px solid var(--bd)', padding: '28px 40px 28px 24px', display: 'flex', flexDirection: 'column', gap: 0, background: 'var(--ivd)', overflowY: 'auto' }}>
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                       <div style={{ fontSize: 10, letterSpacing: '.1em', color: 'var(--t3)', textTransform: 'uppercase' }}>SYSTEM ► OVERVIEW</div>
@@ -634,7 +635,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
               const regionCode = region.short === '서울' ? 'KR-SE' : region.short === '경기' ? 'KR-GG' : region.short === '부산' ? 'KR-BS' : `KR-${region.short.slice(0,2).toUpperCase()}`
 
               return (
-                <div style={{ borderLeft: '.5px solid var(--bd)', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 0, background: 'var(--ivd)', overflowY: 'auto' }}>
+                <div style={{ borderLeft: '.5px solid var(--bd)', padding: '24px 40px 24px 20px', display: 'flex', flexDirection: 'column', gap: 0, background: 'var(--ivd)', overflowY: 'auto' }}>
                   {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                     <div style={{ fontSize: 10, letterSpacing: '.08em', color: 'var(--t3)', textTransform: 'uppercase' }}>REGION ► {regionCode}</div>
@@ -651,8 +652,8 @@ export function LandingClient({ stats }: { stats: Stats }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18 }}>
                     <div style={{ fontSize: 11, color: 'var(--t3)' }}>{region.governor.title} {region.governor.name}</div>
                     {region.governor.party && (
-                      <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 20, background: `${region.color}18`, color: region.color, fontWeight: 600 }}>
-                        {region.governor.party.slice(0, 2)}당
+                      <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 20, background: `${getPartyColor(region.governor.party)}18`, color: getPartyColor(region.governor.party), fontWeight: 600 }}>
+                        {region.governor.party}
                       </span>
                     )}
                   </div>

@@ -2,7 +2,8 @@ import { createServerClient } from '@/lib/supabase'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { PartyBadge } from '@/components/ui/PartyBadge'
 import { AISummary, AISummaryPlaceholder, AISummaryNoSource } from '@/components/bills/AISummary'
-import { CosponsorsModal, type Cosponsor } from '@/components/bills/CosponsorsModal'
+import { type Cosponsor } from '@/components/bills/CosponsorsModal'
+import { ProposerCosponsors } from '@/components/bills/ProposerCosponsors'
 import { MemberVoteGrid, type MemberVoteRow } from '@/components/bills/MemberVoteGrid'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -298,24 +299,12 @@ export default async function BillDetailPage({ params }: Props) {
               })()}
               {proposer && <span style={{ width: 1, height: 10, background: 'var(--bd)', flexShrink: 0 }} />}
               {proposer && (
-                <Link href={`/members/${proposer.id}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', background: 'var(--ivd)', flexShrink: 0, position: 'relative' }}>
-                    {proposer.photo_url ? (
-                      <Image src={proposer.photo_url} alt={proposer.name} fill style={{ objectFit: 'cover' }} sizes="20px" />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--t3)' }}>
-                        {proposer.name?.slice(0, 1)}
-                      </div>
-                    )}
-                  </div>
-                  <span>
-                    <span style={{ color: 'var(--t3)' }}>발의 </span>
-                    {bill.proposer_names
-                      ? bill.proposer_names.split(',').map((s: string) => s.trim()).join(' · ')
-                      : proposer.name}
-                    {(bill.cosponsor_count ?? 0) > 0 && <span style={{ color: 'var(--t3)' }}> 외 {bill.cosponsor_count}명</span>}
-                  </span>
-                </Link>
+                <ProposerCosponsors
+                  proposer={proposer}
+                  proposerNames={bill.proposer_names ?? null}
+                  cosponsors={cosponsors as unknown as Cosponsor[]}
+                  cosponsorCount={bill.cosponsor_count ?? cosponsors.length}
+                />
               )}
               {proposer && bill.proposed_at && <span style={{ width: 1, height: 10, background: 'var(--bd)', flexShrink: 0 }} />}
               {bill.proposed_at && <span><span style={{ color: 'var(--t3)' }}>발의일 </span>{formatDate(bill.proposed_at)}</span>}
@@ -334,14 +323,6 @@ export default async function BillDetailPage({ params }: Props) {
             : <AISummaryPlaceholder />
           }
         </div>
-
-        {/* Cosponsors */}
-        {(bill.cosponsor_count ?? cosponsors.length) > 0 && (
-          <CosponsorsModal
-            cosponsors={cosponsors as unknown as Cosponsor[]}
-            totalCount={bill.cosponsor_count ?? cosponsors.length}
-          />
-        )}
 
         {/* Outcome card — shown alone when vote data is unavailable */}
         {!voteResult && outcomeLabel && (
