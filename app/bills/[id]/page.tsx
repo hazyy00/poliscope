@@ -160,7 +160,10 @@ export default async function BillDetailPage({ params }: Props) {
     memberVotes = (data ?? []) as unknown as MemberVoteRow[]
   }
 
-  const aiSummary = bill.ai_summary as AiSummaryJson | null
+  const aiSummaryRaw = bill.ai_summary
+  const aiSummary: AiSummaryJson | null = aiSummaryRaw == null ? null
+    : typeof aiSummaryRaw === 'string' ? JSON.parse(aiSummaryRaw) as AiSummaryJson
+    : aiSummaryRaw as AiSummaryJson
 
   const STATUS_STEPS = ['발의', '위원회 회부', '심사', '본회의 표결']
   const currentStep = bill.status === '계류' ? 1 : ['가결', '수정가결', '부결', '폐기', '철회', '무효'].includes(bill.status ?? '') ? 3 : 2

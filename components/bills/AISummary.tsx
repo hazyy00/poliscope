@@ -58,15 +58,8 @@ interface Props {
   contentUrl: string | null
 }
 
-export function AISummary({ summary, billId, contentUrl }: Props) {
-  const [reported, setReported] = useState(false)
+export function AISummary({ summary, billId: _billId, contentUrl }: Props) {
   const [showSources, setShowSources] = useState(false)
-
-  async function handleReport() {
-    if (reported) return
-    await fetch(`/api/bills/${billId}/report`, { method: 'POST' })
-    setReported(true)
-  }
 
   return (
     <div style={{
@@ -135,17 +128,6 @@ export function AISummary({ summary, billId, contentUrl }: Props) {
           <a href="/ai-guide" style={{ color: 'var(--t3)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
             AI 요약 방식 보기
           </a>
-          <button
-            onClick={handleReport}
-            disabled={reported}
-            style={{
-              marginLeft: 'auto', background: 'none', border: 'none', cursor: reported ? 'default' : 'pointer',
-              padding: 0, fontSize: 11, color: reported ? 'var(--t3)' : 'var(--t2)',
-              fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
-            }}
-          >
-            {reported ? '신고 접수됨' : '이 요약이 틀렸어요'}
-          </button>
         </div>
         <p style={{ fontSize: 11, color: 'var(--t3)', margin: '8px 0 0' }}>
           AI가 생성한 요약입니다. 법적 판단의 근거로 사용하지 마세요.

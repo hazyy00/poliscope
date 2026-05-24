@@ -11,6 +11,8 @@ const SYSTEM_PROMPT = `당신은 대한민국 국회 법안을 시민이 이해�
 3. 요약은 2~4문장 평문으로, 법조문 없이 작성하세요.
 4. key_points는 3~5개 핵심 변경사항을 간결하게 나열하세요.
 5. source_spans는 요약의 근거가 된 원문 구절을 그대로 인용하세요 (최대 3개).
+6. 현행법의 문제점과 개정안의 차이(대비 구조)가 있으면 반드시 summary에 포함하세요.
+7. 직함·기관명·지위명은 원문 표현 그대로 사용하세요. 임의로 축약하거나 일반화하지 마세요. (예: "특별자치시장·특별자치도지사"를 "시·도지사"로 쓰지 않음)
 
 반드시 아래 JSON 형식으로만 응답하세요. 설명 없이 JSON만:
 {
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
       if (!sourceText) {
         // 스크래핑 실패 → ai_summary에 sentinel 저장 (반복 시도 방지)
         await supabase.from('bills').update({
-          ai_summary: JSON.stringify({ summary: '', key_points: [], source_spans: [], _no_source: true }),
+          ai_summary: { summary: '', key_points: [], source_spans: [], _no_source: true },
           ai_summary_at: new Date().toISOString(),
         }).eq('id', bill.id)
         skipped++
@@ -107,7 +109,7 @@ export async function GET(req: NextRequest) {
       if (!result) { skipped++; return }
 
       await supabase.from('bills').update({
-        ai_summary: JSON.stringify(result),
+        ai_summary: result,
         ai_summary_at: new Date().toISOString(),
         ai_confidence: null,
       }).eq('id', bill.id)
