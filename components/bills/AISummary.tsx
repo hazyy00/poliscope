@@ -90,7 +90,7 @@ export function AISummary({ summary, billId, contentUrl }: Props) {
           {summary.summary}
         </p>
 
-        {summary.key_points.length > 0 && (
+        {(summary.key_points?.length ?? 0) > 0 && (
           <ul style={{ margin: '0 0 16px', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {summary.key_points.map((pt, i) => (
               <li key={i} style={{ fontSize: 13, color: 'var(--t2)', lineHeight: 1.5 }}>{pt}</li>
@@ -98,7 +98,7 @@ export function AISummary({ summary, billId, contentUrl }: Props) {
           </ul>
         )}
 
-        {summary.source_spans.length > 0 && (
+        {(summary.source_spans?.length ?? 0) > 0 && (
           <div style={{ marginBottom: 12 }}>
             <button
               onClick={() => setShowSources(s => !s)}
