@@ -49,8 +49,9 @@ export async function GET(req: Request) {
 
       const updates: Record<string, string> = {}
 
-      if (!bill.passed_at && row.LAW_PROC_DT) {
-        const d = row.LAW_PROC_DT
+      const rawDate = row.LAW_PROC_DT || row.RGS_PROC_DT || row.RGS_PRESENT_DT || row.PROC_DT || ''
+      if (!bill.passed_at && rawDate) {
+        const d = rawDate.trim()
         updates.passed_at = d.length === 8
           ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6)}`
           : d
