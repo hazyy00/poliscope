@@ -139,7 +139,7 @@ export default async function BillsPage({ searchParams }: Props) {
       .from('bills')
       .select('id, title, status, committee, proposed_at, passed_at, cosponsor_count, proposer_names, proposer_id, members!bills_proposer_id_fkey(name, party), votes!votes_bill_id_fkey(yes_count, no_count, abstain_count, absent_count, voted_at, result)', { count: 'exact' })
       .eq('is_hidden', false)
-      .order(statusGroup === 'pending' ? 'proposed_at' : 'passed_at', { ascending: false, nullsFirst: false })
+      .order((statusGroup === 'pending' || statusGroup === 'all') ? 'proposed_at' : 'passed_at', { ascending: false, nullsFirst: false })
       .order('title', { ascending: true })
       .range(offset, offset + PAGE_SIZE - 1)
 
