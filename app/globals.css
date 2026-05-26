@@ -21,6 +21,17 @@
   --st-pend-bg: rgba(176,128,40,0.13);
   --st-drop:    #6B6357;
   --st-drop-bg: rgba(107,99,87,0.13);
+
+  /* Member redesign tokens */
+  --m-bg:          #f5f1e8;
+  --m-panel:       #ffffff;
+  --m-faint:       #e3ddc9;
+  --m-line:        #d6cfb8;
+  --m-accent:      #5b4fbd;
+  --m-accent-soft: #e6e2f4;
+  --m-muted:       #8a857a;
+  --m-ink:         #1a1a1a;
+  --m-ink-soft:    #3a3a3a;
 }
 
 em.fell {

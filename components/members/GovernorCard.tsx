@@ -13,7 +13,7 @@ export function GovernorCard({ region }: Props) {
 
   return (
     <Link
-      href={`/regions/${encodeURIComponent(regionName)}`}
+      href={`/governors/${governor.slug}`}
       style={{
         display: 'flex',
         flexDirection: 'column',

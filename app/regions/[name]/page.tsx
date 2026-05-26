@@ -148,22 +148,28 @@ export default async function RegionPage({ params }: Props) {
             {regionData.governor.title}
           </h2>
           <div style={{ width: 180 }}>
-            <div style={{
-              display: 'flex', flexDirection: 'column',
-              background: 'white', border: '1px solid var(--bd)',
-              borderRadius: 10, overflow: 'hidden',
-            }}>
-              {/* Photo */}
-              <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
-                <MemberPhoto src={regionData.governor.photo_url} name={regionData.governor.name} sizes="180px" />
+            <Link
+              href={`/governors/${regionData.governor.slug}`}
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
+              <div style={{
+                display: 'flex', flexDirection: 'column',
+                background: 'white', border: '1px solid var(--bd)',
+                borderRadius: 10, overflow: 'hidden',
+                transition: 'box-shadow 0.15s',
+              }}>
+                {/* Photo */}
+                <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--ivd)' }}>
+                  <MemberPhoto src={regionData.governor.photo_url} name={regionData.governor.name} sizes="180px" />
+                </div>
+                {/* Info */}
+                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--t1)' }}>{regionData.governor.name}</div>
+                  <PartyBadge party={regionData.governor.party} size="sm" />
+                  <div style={{ fontSize: 12, color: 'var(--t3)' }}>{regionData.governor.term}</div>
+                </div>
               </div>
-              {/* Info */}
-              <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--t1)' }}>{regionData.governor.name}</div>
-                <PartyBadge party={regionData.governor.party} size="sm" />
-                <div style={{ fontSize: 12, color: 'var(--t3)' }}>{regionData.governor.term}</div>
-              </div>
-            </div>
+            </Link>
           </div>
         </div>
 

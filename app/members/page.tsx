@@ -1,157 +1,76 @@
-import Link from 'next/link'
 import { createServerClient } from '@/lib/supabase'
-import { REGIONS_DATA } from '@/lib/regions'
-import { MemberCard } from '@/components/members/MemberCard'
-import { GovernorCard } from '@/components/members/GovernorCard'
-import { MemberSearch } from '@/components/members/MemberSearch'
-import { Pagination } from '@/components/ui/Pagination'
+import { MemberListClient } from '@/components/members/MemberListClient'
+import { fetchAllBillStats, aggregateBillStats, computePartyAverages } from '@/lib/bill-stats'
+import type { EnrichedMember } from '@/components/members/BenchmarkCard'
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-  title: '의원 검색 | PoliScope',
-  description: '22대 국회 의원 286명을 이름·지역구·정당으로 검색하세요.',
+  title: '의원 | PoliScope',
+  description: '22대 국회 286명 의원의 발의·표결·주요 분야를 한 화면에서.',
   openGraph: {
-    title: '의원 검색 | PoliScope',
-    description: '22대 국회 의원 286명을 이름·지역구·정당으로 검색하세요.',
+    title: '의원 | PoliScope',
+    description: '22대 국회 286명 의원의 발의·표결·주요 분야를 한 화면에서.',
   },
 }
 
-const PAGE_SIZE = 24
-
-interface Props {
-  searchParams: Promise<{ q?: string; party?: string; district?: string; page?: string }>
-}
-
-export default async function MembersPage({ searchParams }: Props) {
-  const sp = await searchParams
+export default async function MembersPage() {
   const supabase = createServerClient()
-  const page = Math.max(1, parseInt(sp.page ?? '1', 10))
-  const offset = (page - 1) * PAGE_SIZE
 
-  // Filter governors from static data (split into southern/northern)
-  const filterRegion = (r: typeof REGIONS_DATA[0]) => {
-    const gov = r.governor
-    if (sp.q && !gov.name.includes(sp.q)) return false
-    if (sp.party && gov.party !== sp.party) return false
-    if (sp.district && !r.name.includes(sp.district) && !r.short.includes(sp.district)) return false
-    return true
-  }
-  const filteredGovernors = REGIONS_DATA.filter(r => !r.is_northern && filterRegion(r))
-  const filteredNorthern = REGIONS_DATA.filter(r => r.is_northern && filterRegion(r))
+  const [membersRes, allBills] = await Promise.all([
+    supabase
+      .from('members')
+      .select('id, name, party, district, is_pr, photo_url, committee, term')
+      .order('name'),
+    fetchAllBillStats(supabase),
+  ])
 
-  let query = supabase
-    .from('members')
-    .select('id, name, party, district, is_pr, photo_url, committee', { count: 'exact' })
-    .order('name')
-    .range(offset, offset + PAGE_SIZE - 1)
+  const rawMembers = membersRes.data ?? []
+  const billStatsMap = aggregateBillStats(allBills)
+  const partyAverages = computePartyAverages(rawMembers, billStatsMap)
 
-  if (sp.q) query = query.ilike('name', `%${sp.q}%`)
-  if (sp.party) query = query.eq('party', sp.party)
-  if (sp.district) query = query.ilike('district', `%${sp.district}%`)
+  const enriched: EnrichedMember[] = rawMembers.map(m => {
+    const stats = billStatsMap[m.id] ?? { total: 0, passed: 0, passRate: 0, topCommittees: [] }
+    return {
+      ...m,
+      billsCount: stats.total,
+      passRate: stats.passRate,
+      topCommittees: stats.topCommittees,
+    }
+  })
 
-  const { data: members, count } = await query
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
-
-  const hasFilters = !!(sp.q || sp.party || sp.district)
-  const showGovernors = !hasFilters || filteredGovernors.length > 0
-  const showNorthern = !hasFilters || filteredNorthern.length > 0
-
-  const totalCount = (count ?? 0) + (showGovernors ? filteredGovernors.length : 0) + (showNorthern ? filteredNorthern.length : 0)
-
-  function buildHref(p: number) {
-    const usp = new URLSearchParams()
-    if (sp.q) usp.set('q', sp.q)
-    if (sp.party) usp.set('party', sp.party)
-    if (sp.district) usp.set('district', sp.district)
-    if (p > 1) usp.set('page', String(p))
-    const qs = usp.toString()
-    return `/members${qs ? `?${qs}` : ''}`
-  }
+  const maxBills = Math.max(...enriched.map(m => m.billsCount), 1)
+  const billsBarMax = Math.ceil(maxBills / 20) * 20
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 60px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <Link
-          href="/"
-          style={{ fontSize: 13, color: 'var(--t3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 32 }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          지도로 돌아가기
-        </Link>
+    <main style={{ minHeight: '100vh', background: 'var(--m-bg)', padding: '80px 24px 80px' }}>
+      <div style={{ maxWidth: 1440, margin: '0 auto' }}>
 
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--t1)', marginBottom: 8 }}>
-            의원 검색
+        {/* Page title */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8, marginTop: 28 }}>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--font-display)', fontSize: 56,
+            lineHeight: 1.0, fontWeight: 700, letterSpacing: '-0.02em',
+            color: 'var(--m-ink)',
+          }}>
+            국회의원
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--t3)' }}>
-            {totalCount}명
-          </p>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 11, color: 'var(--m-muted)', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>전체</div>
+            <div style={{ fontSize: 28, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--m-ink)' }}>
+              {enriched.length}<span style={{ fontSize: 14, color: 'var(--m-muted)', marginLeft: 2 }}>명</span>
+            </div>
+          </div>
         </div>
+        <p style={{ fontSize: 14, color: 'var(--m-ink-soft)', lineHeight: 1.6, maxWidth: 560, marginBottom: 36 }}>
+          286명 의원의 발의·표결·주요 분야를 한 화면에서. 원문 그대로. 좌도 우도 아닌, 데이터만.
+        </p>
 
-        <div style={{ marginBottom: 24 }}>
-          <Suspense>
-            <MemberSearch />
-          </Suspense>
-        </div>
-
-        {/* Governors section */}
-        {showGovernors && filteredGovernors.length > 0 && (
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 16 }}>
-              시장 · 도지사
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-              {filteredGovernors.map(r => (
-                <GovernorCard key={r.name} region={r} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 이북5도위원회 */}
-        {showNorthern && filteredNorthern.length > 0 && (
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-              이북5도위원회
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--t3)', marginBottom: 16 }}>
-              황해도 · 평안남도 · 평안북도 · 함경남도 · 함경북도 도지사 (차관급 정무직)
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-              {filteredNorthern.map(r => (
-                <GovernorCard key={r.name} region={r} />
-              ))}
-            </div>
-            {(members && members.length > 0) && (
-              <div style={{ height: 1, background: 'var(--bd)', margin: '40px 0 0' }} />
-            )}
-          </div>
-        )}
-
-        {/* Members section */}
-        {members && members.length > 0 ? (
-          <>
-            {showGovernors && filteredGovernors.length > 0 && (
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 16 }}>
-                국회의원
-              </div>
-            )}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-              {members.map(m => (
-                <MemberCard key={m.id} {...m} />
-              ))}
-            </div>
-          </>
-        ) : filteredGovernors.length === 0 ? (
-          <div style={{ textAlign: 'center', color: 'var(--t3)', padding: '80px 0', fontSize: 15 }}>
-            검색 결과가 없습니다.
-          </div>
-        ) : null}
-
-        <Pagination page={page} totalPages={totalPages} buildHref={buildHref} className="mt-12" />
+        <MemberListClient
+          members={enriched}
+          partyAverages={partyAverages}
+          billsBarMax={billsBarMax}
+          totalAssembly={enriched.length}
+        />
       </div>
     </main>
   )

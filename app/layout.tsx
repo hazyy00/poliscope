@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
-import { Noto_Sans_KR, Noto_Serif_KR, IM_Fell_English, JetBrains_Mono } from 'next/font/google'
+import { Noto_Sans_KR, Noto_Serif_KR, IM_Fell_English, JetBrains_Mono, Nanum_Myeongjo } from 'next/font/google'
 import { SiteNav } from '@/components/ui/SiteNav'
+import ScrollToTop from '@/components/ui/ScrollToTop'
 import './globals.css'
 
 const notoSans = Noto_Sans_KR({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-sans' })
 const notoSerif = Noto_Serif_KR({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-serif' })
 const imFell = IM_Fell_English({ subsets: ['latin'], weight: ['400'], style: ['normal', 'italic'], variable: '--font-fell' })
 const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
+const nanumMyeongjo = Nanum_Myeongjo({ subsets: ['latin'], weight: ['400', '700', '800'], variable: '--font-display' })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://poliscope.kr'),
@@ -22,8 +24,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={`${notoSans.variable} ${notoSerif.variable} ${imFell.variable} ${jetBrainsMono.variable}`}>
+    <html lang="ko" className={`${notoSans.variable} ${notoSerif.variable} ${imFell.variable} ${jetBrainsMono.variable} ${nanumMyeongjo.variable}`}>
       <body>
+        <ScrollToTop />
         <SiteNav />
         {children}
       </body>

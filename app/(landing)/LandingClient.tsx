@@ -159,7 +159,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
     {
       id: 'p1',
       num: '01 / 03',
-      title: <>의원 <em>프로필</em></>,
+      title: <>국회의원 <em>프로필</em></>,
       desc: `${f(stats.members)}명 의원의 발의·표결·출석·재산·경력을 한 페이지에. 정당 이탈 표시, 위원회별 활동, 역대 대수 비교. 숫자로 보는 의원, 말이 아닌 기록으로.`,
       tags: ['발의 법안 추적', '표결 이탈 감지', '출석률 시각화'],
       bg: 'var(--iv)',
@@ -348,7 +348,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          <Link href="/members" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>의원</Link>
+          <Link href="/members" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>국회의원</Link>
           <Link href="/bills" style={{ fontSize: 13, color: 'var(--t2)', textDecoration: 'none' }}>법안</Link>
           <Link href="/members" style={{ fontSize: 12, fontWeight: 500, color: 'var(--iv)', background: 'var(--bk)', padding: '7px 16px', borderRadius: 2, textDecoration: 'none' }}>검색하기 →</Link>
         </div>
@@ -470,11 +470,13 @@ export function LandingClient({ stats }: { stats: Stats }) {
                   color: 'var(--iv)', background: 'var(--bk)',
                   padding: '12px 20px', textDecoration: 'none', flexShrink: 0,
                 }}>
-                  &gt;  의원  검색
+                  &gt;  국회의원  검색
                 </Link>
                 <Link href="/bills" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
                   fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.06em',
-                  color: 'var(--t2)', textDecoration: 'none',
+                  color: 'var(--iv)', background: 'var(--pu)',
+                  padding: '12px 20px', textDecoration: 'none', flexShrink: 0,
                 }}>
                   &gt;  법안  /  표결
                 </Link>
@@ -559,7 +561,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                     {/* 4-box stats */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
                       {[
-                        { l: '의원', n: f(stats.members), u: '명' },
+                        { l: '국회의원', n: f(stats.members), u: '명' },
                         { l: '법안', n: f(stats.bills), u: '건' },
                         { l: '표결', n: f(stats.votes), u: '건' },
                         { l: '가결률', n: String(stats.passedRate), u: '%' },
@@ -722,7 +724,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
           {/* FEATURE CARDS */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, background: 'rgba(26,25,22,.11)', borderTop: '.5px solid var(--bd)', flexShrink: 0 }}>
             {[
-              { num: '01', title: '의원 프로필', desc: `${f(stats.members)}명 발의·표결·출석·재산·경력. 정당 이탈 표시, 위원회별 활동.`, href: '/members' },
+              { num: '01', title: '국회의원 프로필', desc: `${f(stats.members)}명 발의·표결·출석·재산·경력. 정당 이탈 표시, 위원회별 활동.`, href: '/members' },
               { num: '02', title: '법안 추적', desc: `${f(stats.bills)}건 전수. AI 요약 + 페르소나별 해석. 직장인·자영업자·학생.`, href: '/bills' },
               { num: '03', title: '표결 기록', desc: `${f(stats.votes)}건 표결 전수. 찬반 비율, 정당별 투표, 접전 표결 하이라이트.`, href: '/bills?status=passed&sort=voteDate' },
             ].map(card => (

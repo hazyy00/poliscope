@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_LINKS = [
-  { label: '의원', href: '/members' },
+  { label: '국회의원', href: '/members' },
   { label: '법안', href: '/bills' },
 ]
 
