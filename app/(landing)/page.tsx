@@ -21,6 +21,7 @@ export default async function LandingPage() {
     { data: aiConfRow },
     { count: thisWeekCount },
     { count: lastWeekCount },
+    { data: weeklyBills },
   ] = await Promise.all([
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false),
     supabase.from('members').select('*', { count: 'exact', head: true }),
@@ -31,6 +32,7 @@ export default async function LandingPage() {
     supabase.from('bills').select('ai_confidence').not('ai_confidence', 'is', null).limit(500),
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false).not('passed_at', 'is', null).gte('passed_at', startOfWeek.toISOString()),
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false).not('passed_at', 'is', null).gte('passed_at', startOfLastWeek.toISOString()).lt('passed_at', startOfWeek.toISOString()),
+    supabase.from('bills').select('proposer_id').eq('is_hidden', false).not('proposer_id', 'is', null).order('proposed_at', { ascending: false }).limit(300),
   ])
 
   const totalVotes = votesCount ?? 0
@@ -58,6 +60,29 @@ export default async function LandingPage() {
   const lastWeek = lastWeekCount ?? 0
   const weekDiff = thisWeek - lastWeek
 
+  // 최근 300건 기준 발의 상위 3명
+  const billCountById: Record<string, number> = {}
+  for (const bill of weeklyBills ?? []) {
+    const id = (bill as { proposer_id: string }).proposer_id
+    billCountById[id] = (billCountById[id] ?? 0) + 1
+  }
+  const top3Ids = Object.entries(billCountById)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => id)
+
+  const { data: topMemberRows } = top3Ids.length > 0
+    ? await supabase.from('members').select('id, name, district, party').in('id', top3Ids)
+    : { data: [] }
+
+  const topMembers = top3Ids
+    .map(id => {
+      const m = (topMemberRows ?? []).find(r => r.id === id)
+      if (!m) return null
+      return { id: m.id, name: m.name, district: m.district ?? '', party: m.party ?? '', count: billCountById[id] }
+    })
+    .filter(Boolean) as { id: string; name: string; district: string; party: string; count: number }[]
+
   return (
     <LandingClient
       stats={{
@@ -70,6 +95,7 @@ export default async function LandingPage() {
         avgAi,
         thisWeek,
         weekDiff,
+        topMembers,
       }}
     />
   )

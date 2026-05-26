@@ -1,9 +1,9 @@
 export default function MembersLoading() {
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--m-bg)', padding: '80px 24px 80px' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 80px' }}>
       <style>{`
         @keyframes sk-pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
-        .sk { background: var(--m-faint); animation: sk-pulse 1.4s ease-in-out infinite; }
+        .sk { background: rgba(0,0,0,0.09); animation: sk-pulse 1.4s ease-in-out infinite; }
       `}</style>
       <div style={{ maxWidth: 1440, margin: '0 auto' }}>
 

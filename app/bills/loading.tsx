@@ -3,7 +3,7 @@ export default function BillsLoading() {
     <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 60px' }}>
       <style>{`
         @keyframes sk-pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
-        .sk { background: var(--ivd); border-radius: 2px; animation: sk-pulse 1.4s ease-in-out infinite; }
+        .sk { background: rgba(0,0,0,0.09); border-radius: 2px; animation: sk-pulse 1.4s ease-in-out infinite; }
       `}</style>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 

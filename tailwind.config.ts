@@ -8,14 +8,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        iv:  '#F2EDE4',
-        ivd: '#E8E1D5',
-        bk:  '#0F0F0D',
+        iv:  '#F5F5F3',
+        ivd: '#ECEAE6',
+        bk:  '#1B1B1B',
         pu:  '#4A3F8F',
         pul: '#6B5FBB',
-        t1:  '#1A1916',
-        t2:  '#5A554A',
-        t3:  '#8A8478',
+        t1:  '#111111',
+        t2:  '#6F6F6F',
+        t3:  '#9B9B9B',
       },
       fontFamily: {
         sans:  ['Noto Sans KR', 'sans-serif'],

@@ -146,7 +146,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
   const partyRole = PARTY_ROLES[member.id]
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--m-bg)', paddingBottom: 80 }}>
+    <main style={{ minHeight: '100vh', background: 'var(--iv)', paddingBottom: 80 }}>
       <div style={{ maxWidth: 1440, margin: '0 auto', padding: '80px 48px 0' }}>
 
         {/* Breadcrumb */}
@@ -387,7 +387,7 @@ export default async function MemberDetailPage({ params, searchParams }: Props) 
                   fontWeight: i === 0 ? 600 : 500,
                   letterSpacing: '-0.01em',
                   color: i === 0 ? '#fff' : 'var(--m-ink-soft)',
-                  background: i === 0 ? color : 'var(--m-bg)',
+                  background: i === 0 ? color : 'var(--iv)',
                   border: i === 0 ? 'none' : '1px solid var(--m-faint)',
                 }}>
                   {tc.label}
@@ -434,7 +434,7 @@ function KPICard({
 }) {
   const diff = value - avg
   const sign = diff > 0 ? '+' : ''
-  const deltaColor = Math.abs(diff) < 2 ? 'var(--m-muted)' : diff > 0 ? '#3a7d4a' : '#b54a3e'
+  const deltaColor = Math.abs(diff) < 2 ? 'var(--m-muted)' : diff > 0 ? 'var(--성공)' : 'var(--위험)'
 
   return (
     <div style={{ background: 'var(--m-panel)', padding: '20px 22px', border: '1px solid var(--m-faint)' }}>

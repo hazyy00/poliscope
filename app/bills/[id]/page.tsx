@@ -383,12 +383,12 @@ export default async function BillDetailPage({ params }: Props) {
                       </div>
                     )}
                     {voteResult.abstain > 0 && (
-                      <div style={{ width: `${(voteResult.abstain / total) * 100}%`, background: 'rgba(138,132,120,0.55)', display: 'flex', alignItems: 'center', paddingInline: 6, overflow: 'hidden', minWidth: 2 }}>
+                      <div style={{ width: `${(voteResult.abstain / total) * 100}%`, background: 'rgba(0,0,0,0.22)', display: 'flex', alignItems: 'center', paddingInline: 6, overflow: 'hidden', minWidth: 2 }}>
                         {voteResult.abstain / total > 0.07 && <span style={{ fontSize: 10, color: 'var(--iv)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>기 {pct(voteResult.abstain)}%</span>}
                       </div>
                     )}
                     {voteResult.absent > 0 && (
-                      <div style={{ width: `${(voteResult.absent / total) * 100}%`, background: 'rgba(100,95,88,0.22)', border: '0.5px solid rgba(100,95,88,0.3)', display: 'flex', alignItems: 'center', paddingInline: 8, overflow: 'hidden', minWidth: 2 }}>
+                      <div style={{ width: `${(voteResult.absent / total) * 100}%`, background: 'rgba(0,0,0,0.10)', border: '0.5px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', paddingInline: 8, overflow: 'hidden', minWidth: 2 }}>
                         {voteResult.absent / total > 0.07 && <span style={{ fontSize: 10, color: 'var(--t2)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>불참 {pct(voteResult.absent)}%</span>}
                       </div>
                     )}
@@ -399,11 +399,11 @@ export default async function BillDetailPage({ params }: Props) {
                     {[
                       { label: '찬성', bg: 'var(--pu)', pctVal: pct(voteResult.yes) },
                       { label: '반대', bg: 'var(--st-fail)', pctVal: pct(voteResult.no) },
-                      ...(voteResult.abstain > 0 ? [{ label: '기권', bg: 'rgba(138,132,120,0.55)', pctVal: pct(voteResult.abstain) }] : []),
-                      ...(voteResult.absent > 0 ? [{ label: '불참', bg: 'rgba(100,95,88,0.22)', pctVal: pct(voteResult.absent) }] : []),
+                      ...(voteResult.abstain > 0 ? [{ label: '기권', bg: 'rgba(0,0,0,0.22)', pctVal: pct(voteResult.abstain) }] : []),
+                      ...(voteResult.absent > 0 ? [{ label: '불참', bg: 'rgba(0,0,0,0.10)', pctVal: pct(voteResult.absent) }] : []),
                     ].map(({ label, bg, pctVal }) => (
                       <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <div style={{ width: 8, height: 8, background: bg, flexShrink: 0, border: label === '불참' ? '0.5px solid rgba(100,95,88,0.3)' : 'none' }} />
+                        <div style={{ width: 8, height: 8, background: bg, flexShrink: 0, border: label === '불참' ? '0.5px solid rgba(0,0,0,0.15)' : 'none' }} />
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--t3)' }}>{label} {pctVal}%</span>
                       </div>
                     ))}
@@ -464,11 +464,11 @@ export default async function BillDetailPage({ params }: Props) {
                             <div style={{ fontSize: 10, color: 'var(--t3)', fontFamily: 'var(--font-mono)' }}>{partyTotal}명</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', height: 12, gap: 1, background: 'rgba(26,25,22,.05)' }}>
+                        <div style={{ display: 'flex', height: 12, gap: 1, background: 'rgba(0,0,0,0.05)' }}>
                           {counts['찬성'] > 0 && <div style={{ width: `${(counts['찬성'] / partyTotal) * 100}%`, background: 'var(--pu)' }} />}
                           {counts['반대'] > 0 && <div style={{ width: `${(counts['반대'] / partyTotal) * 100}%`, background: 'var(--st-fail)' }} />}
-                          {counts['기권'] > 0 && <div style={{ width: `${(counts['기권'] / partyTotal) * 100}%`, background: 'rgba(138,132,120,0.55)' }} />}
-                          {counts['불참'] > 0 && <div style={{ width: `${(counts['불참'] / partyTotal) * 100}%`, background: 'rgba(26,25,22,.06)', borderTop: '1px dashed rgba(26,25,22,0.2)' }} />}
+                          {counts['기권'] > 0 && <div style={{ width: `${(counts['기권'] / partyTotal) * 100}%`, background: 'rgba(0,0,0,0.22)' }} />}
+                          {counts['불참'] > 0 && <div style={{ width: `${(counts['불참'] / partyTotal) * 100}%`, background: 'rgba(0,0,0,0.06)', borderTop: '1px dashed rgba(0,0,0,0.2)' }} />}
                         </div>
                         <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                           <span style={{ color: 'var(--pu)' }}>{counts['찬성'] ?? 0}</span>

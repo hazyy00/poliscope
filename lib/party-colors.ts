@@ -1,8 +1,8 @@
 export type Party = '더불어민주당' | '국민의힘' | '조국혁신당' | '개혁신당' | '진보당' | '무소속'
 
 export const PARTY_PALETTE: Record<string, { color: string; soft: string; dot: string }> = {
-  '더불어민주당': { color: '#1f5fbd', soft: '#dfe7f3', dot: '#2c6fc7' },
-  '국민의힘':     { color: '#c83a48', soft: '#f1d9dd', dot: '#d6505d' },
+  '더불어민주당': { color: '#3D6DC4', soft: '#dde8f5', dot: '#4d7acb' },
+  '국민의힘':     { color: '#C44858', soft: '#f5dde0', dot: '#cc5a68' },
   '조국혁신당':   { color: '#3d7da6', soft: '#dde9f0', dot: '#4f93bc' },
   '개혁신당':     { color: '#d97520', soft: '#f3e2cd', dot: '#e08537' },
   '진보당':       { color: '#a93333', soft: '#ebd5d5', dot: '#bb4949' },

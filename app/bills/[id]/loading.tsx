@@ -3,7 +3,7 @@ export default function BillDetailLoading() {
     <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 0 80px' }}>
       <style>{`
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
-        .sk { background: var(--ivd); border-radius: 2px; animation: pulse 1.4s ease-in-out infinite; }
+        .sk { background: rgba(0,0,0,0.09); border-radius: 2px; animation: pulse 1.4s ease-in-out infinite; }
       `}</style>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 80px' }}>
         {/* Back link */}

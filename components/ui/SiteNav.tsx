@@ -22,10 +22,10 @@ export function SiteNav() {
       background: 'color-mix(in srgb, var(--iv) 92%, transparent)',
       backdropFilter: 'blur(14px)',
     }}>
-      <Link href="/" style={{ textDecoration: 'none', fontFamily: 'var(--font-serif)', fontSize: 15, display: 'flex', alignItems: 'center', gap: 9, color: 'inherit' }}>
+      <Link href="/" style={{ textDecoration: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 9, color: 'inherit' }}>
         <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pu)', flexShrink: 0 }} />
         <div>
-          <div style={{ fontWeight: 400 }}>PoliScope</div>
+          <div style={{ fontWeight: 400, fontFamily: 'var(--font-modern),sans-serif' }}>PoliScope</div>
           <div style={{ fontSize: 10, color: 'var(--t3)', letterSpacing: '0.04em', marginTop: 2, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
             대한민국 국회 투명성 플랫폼
           </div>

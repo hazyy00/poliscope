@@ -42,7 +42,7 @@ export default async function MembersPage() {
   const billsBarMax = Math.ceil(maxBills / 20) * 20
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--m-bg)', padding: '80px 24px 80px' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--iv)', padding: '80px 24px 80px' }}>
       <div style={{ maxWidth: 1440, margin: '0 auto' }}>
 
         {/* Page title */}

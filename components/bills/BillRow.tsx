@@ -163,8 +163,8 @@ function VoteBar({ vote }: { vote: VoteData }) {
       <div style={{ display: 'flex', height: 6, gap: 1, marginBottom: 7 }}>
         {vote.yes_count > 0 && <div style={{ width: pct(vote.yes_count), background: 'var(--pu)' }} />}
         {vote.no_count > 0 && <div style={{ width: pct(vote.no_count), background: 'var(--st-fail)' }} />}
-        {vote.abstain_count > 0 && <div style={{ width: pct(vote.abstain_count), background: 'rgba(138,132,120,0.55)' }} />}
-        {vote.absent_count > 0 && <div style={{ width: pct(vote.absent_count), background: 'rgba(26,25,22,.08)' }} />}
+        {vote.abstain_count > 0 && <div style={{ width: pct(vote.abstain_count), background: 'rgba(0,0,0,0.22)' }} />}
+        {vote.absent_count > 0 && <div style={{ width: pct(vote.absent_count), background: 'rgba(0,0,0,0.08)' }} />}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
         <span><span style={{ color: 'var(--t3)', fontSize: 10 }}>찬 </span><span style={{ color: 'var(--pu)' }}>{vote.yes_count}</span></span>
@@ -187,7 +187,7 @@ function PendingGauge({ days }: { days: number }) {
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--st-pend)' }}>D+{days}</span>
         <span style={{ fontSize: 10, color: 'var(--t3)', letterSpacing: '0.04em' }}>계류 중</span>
       </div>
-      <div style={{ position: 'relative', height: 4, background: 'rgba(26,25,22,.06)' }}>
+      <div style={{ position: 'relative', height: 4, background: 'rgba(0,0,0,0.06)' }}>
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0,
           width: `${fillPct}%`,

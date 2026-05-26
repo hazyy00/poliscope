@@ -91,7 +91,7 @@ export function MemberListClient({ members, partyAverages, billsBarMax, totalAss
               placeholder="이름, 지역구, 정당, 분야 검색"
               style={{
                 width: '100%', padding: '12px 14px 12px 38px',
-                border: '1px solid var(--m-faint)', background: '#faf6ec',
+                border: '1px solid var(--m-faint)', background: 'var(--iv)',
                 fontFamily: 'inherit', fontSize: 14, outline: 'none',
                 color: 'var(--m-ink)', boxSizing: 'border-box', borderRadius: 0,
               }}
@@ -104,7 +104,7 @@ export function MemberListClient({ members, partyAverages, billsBarMax, totalAss
             onChange={e => setParty(e.target.value)}
             style={{
               padding: '12px 14px', border: '1px solid var(--m-faint)',
-              background: '#faf6ec', fontFamily: 'inherit', fontSize: 14,
+              background: 'var(--iv)', fontFamily: 'inherit', fontSize: 14,
               outline: 'none', color: 'var(--m-ink)', cursor: 'pointer',
               appearance: 'none', borderRadius: 0,
             }}
@@ -119,7 +119,7 @@ export function MemberListClient({ members, partyAverages, billsBarMax, totalAss
             onChange={e => setRegion(e.target.value)}
             style={{
               padding: '12px 14px', border: '1px solid var(--m-faint)',
-              background: '#faf6ec', fontFamily: 'inherit', fontSize: 14,
+              background: 'var(--iv)', fontFamily: 'inherit', fontSize: 14,
               outline: 'none', color: 'var(--m-ink)', cursor: 'pointer',
               appearance: 'none', borderRadius: 0,
             }}
@@ -129,7 +129,7 @@ export function MemberListClient({ members, partyAverages, billsBarMax, totalAss
           </select>
 
           {/* Sort toggle */}
-          <div style={{ display: 'flex', border: '1px solid var(--m-faint)', background: '#faf6ec' }}>
+          <div style={{ display: 'flex', border: '1px solid var(--m-faint)', background: 'var(--iv)' }}>
             {(['이름순', '발의수순', '가결율순'] as Sort[]).map(s => {
               const active = sort === s
               const arrow = active && s !== '이름순' ? (dir === 'desc' ? ' ▼' : ' ▲') : ''
@@ -139,10 +139,12 @@ export function MemberListClient({ members, partyAverages, billsBarMax, totalAss
                   onClick={() => handleSort(s)}
                   style={{
                     padding: '11px 13px',
+                    width: s === '이름순' ? 64 : 82,
                     background: active ? 'var(--m-ink)' : 'transparent',
                     color: active ? '#fff' : 'var(--m-ink-soft)',
                     border: 'none', fontFamily: 'inherit', fontSize: 12.5,
                     cursor: 'pointer', fontWeight: active ? 600 : 400,
+                    whiteSpace: 'nowrap', textAlign: 'center',
                   }}
                 >
                   {s}{arrow}

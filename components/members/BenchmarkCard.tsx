@@ -105,7 +105,7 @@ export function BenchmarkCard({ member, partyAvg, billsBarMax }: BenchmarkCardPr
             {termStr && (
               <span style={{
                 fontSize: 10, color: 'var(--m-muted)', fontFamily: 'var(--font-mono)',
-                background: 'var(--m-bg)', padding: '2px 6px',
+                background: 'var(--iv)', padding: '2px 6px',
               }}>
                 {termStr}
               </span>

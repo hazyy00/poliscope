@@ -102,7 +102,7 @@ export function DetailTabs({
         <div>
           {/* Filter chips */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', gap: 0, border: '1px solid var(--m-faint)', background: '#faf6ec' }}>
+            <div style={{ display: 'flex', gap: 0, border: '1px solid var(--m-faint)', background: 'var(--iv)' }}>
               {(['전체', '계류', '가결', '폐기'] as BillStatus[]).map(s => (
                 <button
                   key={s}
@@ -143,12 +143,12 @@ export function DetailTabs({
               </div>
             )}
             {filteredBills.map((bill, i) => {
-              const statusColor = (bill.status === '가결' || bill.status === '수정가결') ? '#3a7d4a'
-                : (bill.status === '폐기' || bill.status === '부결') ? '#b54a3e'
+              const statusColor = (bill.status === '가결' || bill.status === '수정가결') ? 'var(--성공)'
+                : (bill.status === '폐기' || bill.status === '부결') ? 'var(--위험)'
                 : 'var(--m-muted)'
               const statusBg = (bill.status === '가결' || bill.status === '수정가결') ? '#e3edd9'
                 : (bill.status === '폐기' || bill.status === '부결') ? '#f3dcd6'
-                : 'var(--m-bg)'
+                : 'var(--iv)'
               return (
                 <Link
                   key={bill.id}
@@ -162,7 +162,7 @@ export function DetailTabs({
                       fontSize: 13, alignItems: 'center', cursor: 'pointer',
                       transition: 'background .12s',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#faf6ec')}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--iv)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
                     <span style={{ color: 'var(--m-muted)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
@@ -215,23 +215,23 @@ export function DetailTabs({
             {/* Stacked bar */}
             {totalVotes > 0 && (
               <div style={{ display: 'flex', height: 36, marginBottom: 18, border: '1px solid var(--m-faint)' }}>
-                <div style={{ flex: yesP, background: '#3a7d4a', minWidth: 2 }} />
-                <div style={{ flex: noP, background: '#b54a3e', minWidth: 2 }} />
+                <div style={{ flex: yesP, background: 'var(--성공)', minWidth: 2 }} />
+                <div style={{ flex: noP, background: 'var(--위험)', minWidth: 2 }} />
                 <div style={{ flex: absP, background: 'var(--m-muted)', minWidth: 2 }} />
                 <div style={{ flex: missedP, background: 'var(--m-faint)', minWidth: 2 }} />
               </div>
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              <VoteStat label="찬성" count={voteCounts.yes} percent={yesP} color="#3a7d4a" />
-              <VoteStat label="반대" count={voteCounts.no} percent={noP} color="#b54a3e" />
+              <VoteStat label="찬성" count={voteCounts.yes} percent={yesP} color="var(--성공)" />
+              <VoteStat label="반대" count={voteCounts.no} percent={noP} color="var(--위험)" />
               <VoteStat label="기권" count={voteCounts.abstain} percent={absP} color="var(--m-muted)" />
               <VoteStat label="미투표" count={voteCounts.missed} percent={missedP} color="var(--m-faint)" />
             </div>
 
             {crossParty > 0 && (
               <div style={{
-                marginTop: 26, padding: '16px 18px', background: 'var(--m-bg)',
+                marginTop: 26, padding: '16px 18px', background: 'var(--iv)',
                 fontSize: 12.5, color: 'var(--m-ink-soft)', lineHeight: 1.6,
               }}>
                 <span style={{
@@ -253,18 +253,22 @@ export function DetailTabs({
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {votes.slice(0, 15).map((v, i) => {
-                const stanceColor = v.stance === '찬성' ? '#3a7d4a'
-                  : v.stance === '반대' ? '#b54a3e'
+                const stanceColor = v.stance === '찬성' ? 'var(--성공)'
+                  : v.stance === '반대' ? 'var(--위험)'
                   : 'var(--m-muted)'
                 const stanceBg = v.stance === '찬성' ? '#e3edd9'
                   : v.stance === '반대' ? '#f3dcd6'
-                  : 'var(--m-bg)'
+                  : 'var(--iv)'
                 return (
-                  <div key={i} style={{
+                  <Link key={i} href={`/bills/${v.vote_id}`} style={{
                     display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 0', borderBottom: '1px solid var(--m-faint)',
-                    fontSize: 13,
-                  }}>
+                    padding: '10px 12px', borderBottom: '1px solid var(--m-faint)',
+                    fontSize: 13, textDecoration: 'none', color: 'inherit',
+                    margin: '0 -12px',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--m-faint)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
                     <span style={{
                       flexShrink: 0, display: 'inline-block', padding: '2px 8px',
                       fontSize: 11, background: stanceBg, color: stanceColor,
@@ -281,7 +285,7 @@ export function DetailTabs({
                     <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--m-muted)', fontFamily: 'var(--font-mono)' }}>
                       {v.votes?.voted_at?.slice(0, 10).replace(/-/g, '.') ?? ''}
                     </span>
-                  </div>
+                  </Link>
                 )
               })}
               {votes.length === 0 && (
