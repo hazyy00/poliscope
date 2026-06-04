@@ -22,7 +22,7 @@ const REGIONS: Region[] = [
     name: '서울특별시', short: '서울', party: '더불어민주당', seats: '33석', rate: '33/48', color: '#3D6DC4',
     paths: ['M163.8,105.3 L168.6,106.4 L168.9,120.0 L173.8,117.8 L174.3,121.6 L171.7,129.1 L166.6,133.8 L162.6,129.7 L156.0,133.3 L153.9,126.9 L150.3,129.0 L150.8,122.0 L147.0,120.5 L149.5,115.3 L152.8,118.8 L155.8,116.9 L156.2,110.6 L161.3,112.0 L163.8,105.3 Z'],
     hitPath: 'M163.8,105.3 L168.6,106.4 L168.9,120.0 L173.8,117.8 L174.3,121.6 L171.7,129.1 L166.6,133.8 L162.6,129.7 L156.0,133.3 L153.9,126.9 L150.3,129.0 L150.8,122.0 L147.0,120.5 L149.5,115.3 L152.8,118.8 L155.8,116.9 L156.2,110.6 L161.3,112.0 L163.8,105.3 Z',
-    labelX: 163.6, labelY: 120.0, labelSize: 11,
+    labelX: 162.0, labelY: 117.0, labelSize: 9,
   },
   {
     name: '인천광역시', short: '인천', party: '더불어민주당', seats: '10석', rate: '10/12', color: '#3D6DC4',
@@ -335,24 +335,28 @@ export function KoreaMap({ className, onRegionClick, onRegionHover }: Props) {
                   pointerEvents="none"
                 />
               ))}
-
-              {/* Label */}
-              <text
-                x={region.labelX}
-                y={region.labelY}
-                fontSize={region.labelSize}
-                fill="rgba(255,255,255,0.9)"
-                fontFamily="Noto Sans KR,sans-serif"
-                textAnchor="middle"
-                pointerEvents="none"
-                fontWeight={500}
-                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}
-              >
-                {region.short}
-              </text>
             </g>
           )
         })}
+
+        {/* Labels rendered last so they always appear on top of all region fills */}
+        <g pointerEvents="none">
+          {sortedRegions.map(region => (
+            <text
+              key={region.name}
+              x={region.labelX}
+              y={region.labelY}
+              fontSize={region.labelSize}
+              fill="rgba(255,255,255,0.9)"
+              fontFamily="Pretendard Variable,Pretendard,sans-serif"
+              textAnchor="middle"
+              fontWeight={500}
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}
+            >
+              {region.short}
+            </text>
+          ))}
+        </g>
 
         {/* Dedicated hit layer — inner cities rendered last so their hit areas are always on top */}
         <g>

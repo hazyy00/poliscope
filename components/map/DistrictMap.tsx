@@ -242,7 +242,7 @@ export function DistrictMap({ regionShort, members }: Props) {
                 dominantBaseline="central"
                 style={{ pointerEvents: 'none', userSelect: 'none' }}
                 fontSize={isHovered ? 11 : 9}
-                fontFamily="'Noto Sans KR', sans-serif"
+                fontFamily="Pretendard Variable,Pretendard,sans-serif"
                 fontWeight={600}
                 fill="white"
                 stroke="rgba(0,0,0,0.5)"

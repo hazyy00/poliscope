@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { createServerClient } from '@/lib/supabase'
 import { BillRow } from '@/components/bills/BillRow'
 import { BillStatusCards, type StatusCardDef } from '@/components/bills/BillStatusCards'
@@ -311,8 +310,6 @@ export default async function BillsPage({ searchParams }: Props) {
           </svg>
           홈으로 돌아가기
         </Link>
-        <Breadcrumb items={[{ label: 'PoliScope', href: '/' }, { label: '법안' }]} />
-
         {/* Page header — 2-column */}
         <header style={{
           marginTop: 18,
@@ -323,17 +320,17 @@ export default async function BillsPage({ searchParams }: Props) {
         }}>
           <div>
             <h1 style={{
-              fontFamily: 'var(--font-serif)', fontWeight: 300,
-              fontSize: 56, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.05,
+              fontFamily: 'var(--font-pretendard)', fontWeight: 700,
+              fontSize: 56, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
               color: 'var(--t1)',
             }}>
-              법안 · <em className="fell">발의부터 표결까지</em>
+              법안
             </h1>
             <p style={{
               margin: '14px 0 0', maxWidth: 540,
               fontSize: 14, fontWeight: 300, color: 'var(--t2)', lineHeight: 1.7,
             }}>
-              {statusCounts[0].toLocaleString()}건의 법안과 표결을 한 화면에서. 법이 어디까지 갔는지,<br />누가 어떻게 투표했는지 확인하세요.
+              {statusCounts[0].toLocaleString()}건의 법안과 표결을 한 화면에서.
             </p>
           </div>
           <Suspense>

@@ -1,9 +1,10 @@
 import { createServerClient } from '@/lib/supabase'
+import { COMMITTEE_AREA } from '@/lib/party-colors'
 
 export interface BillStat {
   proposer_id: string
   status: string
-  category?: string | null
+  committee?: string | null
 }
 
 export interface TopCommittee {
@@ -42,7 +43,7 @@ export async function fetchAllBillStats(
     Array.from({ length: pages }, (_, i) =>
       supabase
         .from('bills')
-        .select('proposer_id, status, category')
+        .select('proposer_id, status, committee')
         .not('proposer_id', 'is', null)
         .range(i * PAGE, i * PAGE + PAGE - 1)
     )
@@ -61,9 +62,9 @@ export function aggregateBillStats(allBills: BillStat[]): Record<string, MemberB
     if (bill.status === '가결' || bill.status === '수정가결') {
       map[bill.proposer_id].passed++
     }
-    if (bill.category) {
+    if (bill.committee && COMMITTEE_AREA[bill.committee]) {
       const cc = map[bill.proposer_id].committeeCounts
-      cc[bill.category] = (cc[bill.category] ?? 0) + 1
+      cc[bill.committee] = (cc[bill.committee] ?? 0) + 1
     }
   }
 
@@ -74,7 +75,7 @@ export function aggregateBillStats(allBills: BillStat[]): Record<string, MemberB
       .slice(0, 3)
       .map(([name, count]) => ({
         name,
-        label: name,
+        label: COMMITTEE_AREA[name] ?? name,
         pct: total > 0 ? Math.round((count / total) * 100) : 0,
       }))
     result[id] = {

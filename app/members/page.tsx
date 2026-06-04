@@ -62,7 +62,7 @@ export default async function MembersPage() {
           </div>
         </div>
         <p style={{ fontSize: 14, color: 'var(--m-ink-soft)', lineHeight: 1.6, maxWidth: 560, marginBottom: 36 }}>
-          286명 의원의 발의·표결·주요 분야를 한 화면에서. 원문 그대로. 좌도 우도 아닌, 데이터만.
+          286명 의원의 발의·표결·주요 분야를 한 화면에서.
         </p>
 
         <MemberListClient

@@ -18,7 +18,7 @@ const config: Config = {
         t3:  '#9B9B9B',
       },
       fontFamily: {
-        sans:  ['Noto Sans KR', 'sans-serif'],
+        sans:  ['Pretendard Variable', 'Pretendard', 'sans-serif'],
         serif: ['Noto Serif KR', 'serif'],
         fell:  ['IM Fell English', 'serif'],
       },

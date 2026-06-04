@@ -49,14 +49,14 @@ function Deco1() {
           return <rect key={i} x={x} y={svgH - bh - 20} width={barW} height={bh} rx={2} fill={`rgba(74,63,143,${alpha})`} />
         })}
         <line x1={startX} y1={svgH - 20} x2={startX + total} y2={svgH - 20} stroke="rgba(26,25,22,0.1)" strokeWidth={0.8} />
-        <text x={svgW / 2} y={svgH - 4} fontSize={9} fill="rgba(26,25,22,0.3)" textAnchor="middle" fontFamily="Noto Sans KR,sans-serif" letterSpacing="0.08em">
+        <text x={svgW / 2} y={svgH - 4} fontSize={9} fill="rgba(26,25,22,0.3)" textAnchor="middle" fontFamily="Pretendard Variable,Pretendard,sans-serif" letterSpacing="0.08em">
           의원별 본회의 출석률
         </text>
       </svg>
       <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
         {[{ n: '286', l: '현역 의원' }, { n: '발의·표결', l: '기록 추적' }, { n: '당 평균', l: '비교 제공' }].map(c => (
           <div key={c.l} style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
             <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
           </div>
         ))}
@@ -95,7 +95,7 @@ function Deco2({ billsCount }: { billsCount: number }) {
         {tags.map(tg => (
           <g key={tg.t}>
             <rect x={tg.x} y={tg.y} width={tg.w} height={20} rx={10} fill="rgba(74,63,143,0.09)" stroke="rgba(74,63,143,0.25)" strokeWidth={0.7} />
-            <text x={tg.x + tg.w / 2} y={tg.y + 13.5} fontSize={9} fill="rgba(74,63,143,0.75)" textAnchor="middle" fontFamily="Noto Sans KR,sans-serif">{tg.t}</text>
+            <text x={tg.x + tg.w / 2} y={tg.y + 13.5} fontSize={9} fill="rgba(74,63,143,0.75)" textAnchor="middle" fontFamily="Pretendard Variable,Pretendard,sans-serif">{tg.t}</text>
           </g>
         ))}
         {waves.map((w, i) => (
@@ -105,7 +105,7 @@ function Deco2({ billsCount }: { billsCount: number }) {
       <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
         {[{ n: billsCount.toLocaleString(), l: '발의 법안' }, { n: '3종', l: '페르소나 해석' }, { n: 'AI', l: '자동 요약' }].map(c => (
           <div key={c.l} style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
             <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
           </div>
         ))}
@@ -139,7 +139,7 @@ function Deco3({ votesCount, passedRate, thisWeek }: { votesCount: number; passe
       <div style={{ display: 'flex', gap: 28, marginTop: 4 }}>
         {[{ n: votesCount.toLocaleString(), l: '표결 기록' }, { n: `${passedRate}%`, l: '가결률' }, { n: `${thisWeek}건`, l: '이번 주 처리' }].map(c => (
           <div key={c.l} style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
+            <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
             <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
           </div>
         ))}
@@ -295,7 +295,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
         .li.s { transform:translateY(0); opacity:1; }
         #lb { opacity:0; transition:opacity .4s; }
         #lb.s { opacity:1; }
-        .sp-title em { font-style:italic; color:var(--pu); font-family:var(--font-fell),serif; }
+        .sp-title em { font-style:italic; color:var(--pu); font-family:var(--font-pretendard); }
         .fcard:hover .fa-arrow { border-color:var(--pu); color:var(--pu); transform:translate(2px,-2px); }
       `}</style>
 
@@ -313,8 +313,8 @@ export function LandingClient({ stats }: { stats: Stats }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
             {[
               { id: 'l1', text: 'PoliScope.', color: 'var(--iv)', italic: false, font: 'var(--font-modern),sans-serif' },
-              { id: 'l2', text: '데이터로 보는 민주주의.', color: 'var(--pul)', italic: true, font: 'var(--font-serif),serif' },
-              { id: 'l3', text: '대한민국 국회 투명성 플랫폼.', color: 'var(--iv)', italic: false, font: 'var(--font-serif),serif' },
+              { id: 'l2', text: '데이터로 보는 민주주의.', color: 'var(--pul)', italic: true, font: 'var(--font-pretendard)' },
+              { id: 'l3', text: '대한민국 국회 투명성 플랫폼.', color: 'var(--iv)', italic: false, font: 'var(--font-pretendard)' },
             ].map(({ id, text, color, italic, font }) => (
               <div
                 key={id} id={id} className="li"
@@ -349,7 +349,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
         transform: navVisible ? 'translateY(0)' : 'translateY(-8px)',
         transition: 'opacity .5s, transform .5s',
       }}>
-        <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 15, display: 'flex', alignItems: 'center', gap: 7 }}>
+        <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 15, display: 'flex', alignItems: 'center', gap: 7 }}>
           <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pu)' }}></div>
           <div>
             <div style={{ fontFamily: 'var(--font-modern),sans-serif' }}>PoliScope</div>
@@ -416,7 +416,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                 <div style={{ fontFamily: 'var(--font-modern),sans-serif', fontSize: 'clamp(48px,6vw,82px)', fontWeight: 200, lineHeight: 1, letterSpacing: '-.02em', marginBottom: 10 }}>
                   PoliScope
                 </div>
-                <h1 style={{ fontFamily: 'var(--font-serif),serif', fontSize: 'clamp(14px,1.5vw,22px)', fontWeight: 300, lineHeight: 1.4, letterSpacing: '-.01em', margin: 0, marginBottom: 14, color: 'var(--t2)' }}>
+                <h1 style={{ fontFamily: 'var(--font-pretendard)', fontSize: 'clamp(14px,1.5vw,22px)', fontWeight: 300, lineHeight: 1.4, letterSpacing: '-.01em', margin: 0, marginBottom: 14, color: 'var(--t2)' }}>
                   국회 투명성 플랫폼
                 </h1>
                 <p style={{ fontSize: 12, fontWeight: 300, lineHeight: 1.8, color: 'var(--t2)', margin: 0 }}>
@@ -475,7 +475,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                   color: 'var(--iv)', background: 'var(--bk)',
                   padding: '12px 20px', textDecoration: 'none', flexShrink: 0,
                 }}>
-                  &gt;  국회의원  검색
+                  &gt;  국회의원
                 </Link>
                 <Link href="/bills" style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -557,7 +557,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                         LIVE
                       </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 'clamp(20px,2.2vw,28px)', fontWeight: 300, letterSpacing: '-.02em', lineHeight: 1.2, marginBottom: 4 }}>
+                    <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 'clamp(20px,2.2vw,28px)', fontWeight: 300, letterSpacing: '-.02em', lineHeight: 1.2, marginBottom: 4 }}>
                       실시간 현황
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 20 }}>
@@ -573,7 +573,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                       ].map(s => (
                         <div key={s.l} style={{ border: '.5px solid var(--bd)', borderRadius: 6, padding: '10px 12px', background: 'rgba(255,255,255,0.5)' }}>
                           <div style={{ fontSize: 10, color: 'var(--t3)', marginBottom: 6, letterSpacing: '.04em' }}>{s.l}</div>
-                          <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1 }}>
+                          <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1 }}>
                             {s.n}<span style={{ fontSize: 11, color: 'var(--t3)', marginLeft: 2 }}>{s.u}</span>
                           </div>
                         </div>
@@ -587,7 +587,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                           {stats.weekDiff >= 0 ? `+${stats.weekDiff}` : stats.weekDiff} vs 지난 주
                         </span>
                       </div>
-                      <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 20, fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1 }}>
+                      <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1 }}>
                         {stats.thisWeek}<span style={{ fontSize: 11, color: 'var(--t3)', marginLeft: 2 }}>건</span>
                       </div>
                     </div>
@@ -595,7 +595,10 @@ export function LandingClient({ stats }: { stats: Stats }) {
                     {stats.latestVote && (
                       <div style={{ marginBottom: 20 }}>
                         <div style={{ fontSize: 10, color: 'var(--t3)', letterSpacing: '.04em', marginBottom: 8 }}>주목 표결</div>
-                        <div style={{ border: '.5px solid var(--bd)', borderRadius: 6, padding: '10px 12px', background: 'rgba(255,255,255,0.5)' }}>
+                        <Link href={`/bills/${stats.latestVote.id}`}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.95)'; e.currentTarget.style.borderColor = 'rgba(74,63,143,0.35)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.5)'; e.currentTarget.style.borderColor = 'var(--bd)'; }}
+                          style={{ display: 'block', border: '.5px solid var(--bd)', borderRadius: 6, padding: '10px 12px', background: 'rgba(255,255,255,0.5)', textDecoration: 'none', transition: 'background .15s, border-color .15s' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <div style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 500 }}>법안 #{stats.latestVote.id.slice(-4)}</div>
                             <div style={{ fontSize: 10, color: 'var(--pu)', fontWeight: 600 }}>► {stats.latestVote.result}</div>
@@ -606,7 +609,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                           <div style={{ height: 4, borderRadius: 2, background: 'var(--bd)', overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${stats.passedRate}%`, background: 'var(--pu)', borderRadius: 2 }} />
                           </div>
-                        </div>
+                        </Link>
                       </div>
                     )}
                     {/* 최근 활동 상위 */}
@@ -652,7 +655,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                   </div>
 
                   {/* Title */}
-                  <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 'clamp(20px,2.2vw,28px)', fontWeight: 300, letterSpacing: '-.02em', lineHeight: 1.2, marginBottom: 4 }}>
+                  <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 'clamp(20px,2.2vw,28px)', fontWeight: 300, letterSpacing: '-.02em', lineHeight: 1.2, marginBottom: 4 }}>
                     {region.name}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20 }}>
@@ -674,7 +677,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
                     ].map(s => (
                       <div key={s.l} style={{ border: '.5px solid var(--bd)', borderRadius: 5, padding: '8px 10px', background: 'rgba(255,255,255,0.5)' }}>
                         <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.04em' }}>{s.l}</div>
-                        <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 16, fontWeight: 400, letterSpacing: '-.02em' }}>{s.n}</div>
+                        <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 16, fontWeight: 400, letterSpacing: '-.02em' }}>{s.n}</div>
                       </div>
                     ))}
                   </div>
@@ -690,16 +693,6 @@ export function LandingClient({ stats }: { stats: Stats }) {
                   </div>
 
 
-                  {/* 최근 표결 */}
-                  {stats.latestVote && (
-                    <div style={{ marginBottom: 16, padding: '8px 10px', border: '.5px solid var(--bd)', borderRadius: 5, background: 'rgba(255,255,255,0.5)' }}>
-                      <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 5, letterSpacing: '.04em' }}>최근 표결</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: 11, color: 'var(--t2)' }}>#{stats.latestVote.id.slice(-4)}</div>
-                        <div style={{ fontSize: 10, color: 'var(--pu)', fontWeight: 600 }}>→ {stats.latestVote.result}</div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* 하단 링크 */}
                   <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: '.5px solid var(--bd)', fontFamily: 'monospace', fontSize: 10, color: 'var(--t3)', lineHeight: 2 }}>
@@ -728,8 +721,8 @@ export function LandingClient({ stats }: { stats: Stats }) {
                 className="fcard"
                 style={{ background: 'var(--iv)', padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 9, textDecoration: 'none', borderRight: '.5px solid rgba(26,25,22,.11)' }}
               >
-                <div style={{ fontFamily: 'var(--font-fell),serif', fontSize: 12, color: 'var(--pu)', letterSpacing: '.05em' }}>{card.num}</div>
-                <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 17, fontWeight: 400, color: 'var(--t1)', letterSpacing: '-.01em' }}>{card.title}</div>
+                <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 12, color: 'var(--pu)', letterSpacing: '.05em' }}>{card.num}</div>
+                <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 17, fontWeight: 400, color: 'var(--t1)', letterSpacing: '-.01em' }}>{card.title}</div>
                 <div style={{ fontSize: 12, fontWeight: 300, color: 'var(--t2)', lineHeight: 1.7 }}>{card.desc}</div>
                 <div
                   className="fa-arrow"
@@ -764,13 +757,13 @@ export function LandingClient({ stats }: { stats: Stats }) {
           >
             {/* LEFT */}
             <div style={{ padding: '0 60px 0 80px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-fell),serif', fontSize: 12, color: 'var(--pu)', letterSpacing: '.08em', marginBottom: 18 }}>
+              <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 12, color: 'var(--pu)', letterSpacing: '.08em', marginBottom: 18 }}>
                 {panel.num}
               </div>
               <div
                 className="sp-title"
                 style={{
-                  fontFamily: 'var(--font-serif),serif',
+                  fontFamily: 'var(--font-pretendard)',
                   fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 300,
                   lineHeight: 1.15, letterSpacing: '-.025em', marginBottom: 20,
                 }}
@@ -808,7 +801,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
           borderTop: '.5px solid var(--bd)',
         }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-serif),serif', fontSize: 13, color: 'var(--t2)' }}>PoliScope</div>
+            <div style={{ fontFamily: 'var(--font-modern),sans-serif', fontSize: 13, color: 'var(--t2)' }}>PoliScope</div>
             <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 2 }}>대한민국 국회 투명성 플랫폼</div>
           </div>
           <div style={{ fontSize: 11, color: 'var(--t3)' }}>국회 공공데이터 API 기반 · 원문 출처 제공 · 정치적 중립</div>
