@@ -126,13 +126,14 @@ export async function GET(req: Request) {
 async function fetchVotes(since: string) {
   const rows: object[] = []
   let page = 1
-  while (true) {
+  while (page <= 20) {
     const params = new URLSearchParams({
       KEY: ASSEMBLY_API_KEY, Type: 'json', AGE: '22',
       pIndex: String(page), pSize: '100', LAW_PROC_DT: since,
     })
     const res = await fetch(`${BASE_URL}/nwbpacrgavhjryiph?${params}`, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(15000),
     })
     const data = await res.json()
     const wrapper = data?.nwbpacrgavhjryiph ?? []
@@ -179,6 +180,7 @@ async function fetchMemberVotes(voteIds: string[]) {
     })
     const res = await fetch(`${BASE_URL}/nojepdqqaweusdfbi?${params}`, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(15000),
     })
     const data = await res.json()
     const wrapper = data?.nojepdqqaweusdfbi ?? []
