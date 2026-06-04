@@ -97,15 +97,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // 4. bill status 동기화 — votes 기반 역추론 제거, 공식 bills API 기준
-    if (votes.length > 0) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://poliscope.kr'
-      await fetch(`${appUrl}/api/cron/sync-bills`, {
-        headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
-      })
-    }
-
-    // 4. sync_log 기록
+    // sync_log 기록
     await supabase.from('sync_log').upsert(
       { key: 'votes', synced_at: new Date().toISOString() },
       { onConflict: 'key' }
