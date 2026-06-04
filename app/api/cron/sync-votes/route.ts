@@ -93,16 +93,20 @@ export async function GET(req: Request) {
       if (newBills.length > 0) {
         await upsertInBatches(supabase, 'bills', newBills, 'id')
       }
-      // 기존 bill 중 passed_at 또는 content_url이 null인 것 업데이트
-      for (const v of votedBills) {
-        const existing = existingMap.get(v!.id)
-        if (!existing) continue
-        const updates: Record<string, string> = {}
-        if (!existing.passed_at && v!.voted_at) updates.passed_at = v!.voted_at.slice(0, 10)
-        if (!existing.content_url && v!.link_url) updates.content_url = v!.link_url
-        if (Object.keys(updates).length > 0) {
-          await supabase.from('bills').update(updates).eq('id', v!.id)
-        }
+      // 기존 bill 중 passed_at 또는 content_url이 null인 것 배치 upsert
+      const toFix = votedBills
+        .filter(v => existingMap.has(v!.id))
+        .map(v => {
+          const ex = existingMap.get(v!.id)!
+          return {
+            id: v!.id,
+            ...((!ex.passed_at && v!.voted_at) ? { passed_at: v!.voted_at.slice(0, 10) } : {}),
+            ...((!ex.content_url && v!.link_url) ? { content_url: v!.link_url } : {}),
+          }
+        })
+        .filter(r => Object.keys(r).length > 1)
+      if (toFix.length > 0) {
+        await upsertInBatches(supabase, 'bills', toFix, 'id')
       }
     }
 
