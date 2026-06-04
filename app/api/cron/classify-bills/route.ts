@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@/lib/supabase'
 
+export const maxDuration = 300
+
 const CATEGORIES = [
   '경제/재정', '과학/IT', '보건/복지', '교육', '환경/노동',
   '국방/외교', '교통/건설', '문화/체육', '농업/해양', '정치/법률',

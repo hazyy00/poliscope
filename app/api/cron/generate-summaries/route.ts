@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@/lib/supabase'
+
+export const maxDuration = 300
 import { scrapeBillText } from '@/lib/scrape-bill'
 
 const SYSTEM_PROMPT = `당신은 대한민국 국회 법안을 시민이 이해하기 쉽게 요약하는 전문가입니다.
