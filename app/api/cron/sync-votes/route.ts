@@ -37,10 +37,19 @@ export async function GET(req: Request) {
       await upsertInBatches(supabase, 'votes', votes, 'id')
     }
 
-    // 2. 의원별 표결 수집 (새로 추가된 vote_id만)
+    // 2. 의원별 표결 수집 (member_votes에 없는 vote_id만)
     const voteIds = votes.map(v => v!.id)
+    let newVoteIds = voteIds
     if (voteIds.length > 0) {
-      const memberRows = await fetchMemberVotes(voteIds)
+      const { data: existing } = await supabase
+        .from('member_votes')
+        .select('vote_id')
+        .in('vote_id', voteIds)
+      const existingVoteIds = new Set((existing ?? []).map((r: { vote_id: string }) => r.vote_id))
+      newVoteIds = voteIds.filter(id => !existingVoteIds.has(id))
+    }
+    if (newVoteIds.length > 0) {
+      const memberRows = await fetchMemberVotes(newVoteIds)
       if (memberRows.length > 0) {
         const validIds = await getValidMemberIds(supabase)
         const filtered = memberRows.filter(r => validIds.has(r.member_id))
