@@ -30,6 +30,13 @@ export async function GET(req: Request) {
   yesterday.setDate(yesterday.getDate() - 1)
   const since = yesterday.toISOString().slice(0, 10).replace(/-/g, '')
 
+  // 스트리밍 응답으로 프록시 연결 유지 (첫 바이트 즉시 전송)
+  const encoder = new TextEncoder()
+  const stream = new TransformStream()
+  const writer = stream.writable.getWriter()
+  const write = (msg: string) => writer.write(encoder.encode(msg + '\n'))
+
+  const runSync = async () => {
   try {
     // 1. 표결 목록 수집 (60초 하드 타임아웃)
     const votesRaw = await Promise.race([
@@ -120,15 +127,21 @@ export async function GET(req: Request) {
       { onConflict: 'key' }
     )
 
-    return NextResponse.json({
-      ok: true,
-      votes: votes.length,
-      since,
-    })
+    await write(JSON.stringify({ ok: true, votes: votes.length, since }))
   } catch (err) {
     console.error('[cron/sync-votes]', err)
-    return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
+    await write(JSON.stringify({ error: 'Sync failed', detail: String(err) }))
+  } finally {
+    await writer.close()
   }
+  }
+
+  write('{"status":"started"}')
+  runSync()
+
+  return new Response(stream.readable, {
+    headers: { 'Content-Type': 'application/x-ndjson' },
+  })
 }
 
 async function fetchVotes(since: string) {
