@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 export const maxDuration = 300
@@ -30,20 +31,10 @@ export async function GET(req: Request) {
   yesterday.setDate(yesterday.getDate() - 1)
   const since = yesterday.toISOString().slice(0, 10).replace(/-/g, '')
 
-  // 스트리밍 응답으로 프록시 연결 유지 (첫 바이트 즉시 전송)
-  const encoder = new TextEncoder()
-  const stream = new TransformStream()
-  const writer = stream.writable.getWriter()
-  const write = (msg: string) => writer.write(encoder.encode(msg + '\n'))
-
-  const runSync = async () => {
+  after(async () => {
   try {
-    // 1. 표결 목록 수집 (60초 하드 타임아웃)
-    const votesRaw = await Promise.race([
-      fetchVotes(since),
-      new Promise<[]>(resolve => setTimeout(() => resolve([]), 60000)),
-    ])
-    const votes = votesRaw.filter(Boolean) as NonNullable<Awaited<ReturnType<typeof fetchVotes>>[number]>[]
+    // 1. 표결 목록 수집
+    const votes = (await fetchVotes(since)).filter(Boolean) as NonNullable<Awaited<ReturnType<typeof fetchVotes>>[number]>[]
     if (votes.length > 0) {
       await upsertInBatches(supabase, 'votes', votes, 'id')
     }
@@ -127,21 +118,13 @@ export async function GET(req: Request) {
       { onConflict: 'key' }
     )
 
-    await write(JSON.stringify({ ok: true, votes: votes.length, since }))
+    console.log('[cron/sync-votes] done', { votes: votes.length, since })
   } catch (err) {
     console.error('[cron/sync-votes]', err)
-    await write(JSON.stringify({ error: 'Sync failed', detail: String(err) }))
-  } finally {
-    await writer.close()
   }
-  }
-
-  write('{"status":"started"}')
-  runSync()
-
-  return new Response(stream.readable, {
-    headers: { 'Content-Type': 'application/x-ndjson' },
   })
+
+  return NextResponse.json({ ok: true, status: 'started', since })
 }
 
 async function fetchVotes(since: string) {
