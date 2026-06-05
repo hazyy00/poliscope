@@ -31,8 +31,12 @@ export async function GET(req: Request) {
   const since = yesterday.toISOString().slice(0, 10).replace(/-/g, '')
 
   try {
-    // 1. 표결 목록 수집
-    const votes = (await fetchVotes(since)).filter(Boolean) as NonNullable<Awaited<ReturnType<typeof fetchVotes>>[number]>[]
+    // 1. 표결 목록 수집 (60초 하드 타임아웃)
+    const votesRaw = await Promise.race([
+      fetchVotes(since),
+      new Promise<[]>(resolve => setTimeout(() => resolve([]), 60000)),
+    ])
+    const votes = votesRaw.filter(Boolean) as NonNullable<Awaited<ReturnType<typeof fetchVotes>>[number]>[]
     if (votes.length > 0) {
       await upsertInBatches(supabase, 'votes', votes, 'id')
     }
