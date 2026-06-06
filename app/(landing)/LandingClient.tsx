@@ -28,10 +28,11 @@ interface Stats {
   thisWeek: number
   weekDiff: number
   topMembers: TopMember[]
+  partyStats: { party: string; count: number }[]
 }
 
 // ── DECO 1: 의원 프로필 — 세로 바 그리드 (출석률) ──────────────
-function Deco1() {
+function Deco1({ membersCount }: { membersCount: number }) {
   const bars = [58, 72, 81, 65, 92, 78, 88, 69, 95, 74, 83, 61]
   const svgW = 300, svgH = 260
   const barW = 16, gap = 8
@@ -54,7 +55,7 @@ function Deco1() {
         </text>
       </svg>
       <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
-        {[{ n: '286', l: '현역 의원' }, { n: '발의·표결', l: '기록 추적' }, { n: '당 평균', l: '비교 제공' }].map(c => (
+        {[{ n: String(membersCount), l: '현역 의원' }, { n: '발의·표결', l: '기록 추적' }, { n: '당 평균', l: '비교 제공' }].map(c => (
           <div key={c.l} style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-pretendard)', fontSize: 20, fontWeight: 400, color: 'rgba(26,25,22,0.75)', letterSpacing: '-0.02em' }}>{c.n}</div>
             <div style={{ fontSize: 10, color: 'rgba(26,25,22,0.35)', marginTop: 3, letterSpacing: '0.06em' }}>{c.l}</div>
@@ -173,7 +174,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
       tags: ['발의 법안 추적', '표결 성향 분석', '정당 평균 비교'],
       bg: 'var(--iv)',
       rightBg: 'var(--ivd)',
-      deco: <Deco1/>,
+      deco: <Deco1 membersCount={stats.members}/>,
     },
     {
       id: 'p2',
@@ -490,7 +491,7 @@ export function LandingClient({ stats }: { stats: Stats }) {
 
             {/* COL 2 — interactive Korea map */}
             <div style={{ height: '100%', position: 'relative', overflow: 'hidden', background: '#DDDDDD' }}>
-              <KoreaMap className="absolute inset-0" onRegionClick={handleRegionClick} onRegionHover={setHoveredRegion} />
+              <KoreaMap className="absolute inset-0" onRegionClick={handleRegionClick} onRegionHover={setHoveredRegion} partyStats={stats.partyStats} />
 
               {/* 이북5도위원회 panel */}
               <div

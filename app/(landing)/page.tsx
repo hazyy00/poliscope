@@ -22,6 +22,7 @@ export default async function LandingPage() {
     { count: thisWeekCount },
     { count: lastWeekCount },
     { data: weeklyBills },
+    { data: partyRows },
   ] = await Promise.all([
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false),
     supabase.from('members').select('*', { count: 'exact', head: true }),
@@ -33,6 +34,7 @@ export default async function LandingPage() {
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false).not('passed_at', 'is', null).gte('passed_at', startOfWeek.toISOString()),
     supabase.from('bills').select('*', { count: 'exact', head: true }).eq('is_hidden', false).not('passed_at', 'is', null).gte('passed_at', startOfLastWeek.toISOString()).lt('passed_at', startOfWeek.toISOString()),
     supabase.from('bills').select('proposer_id').eq('is_hidden', false).not('proposer_id', 'is', null).order('proposed_at', { ascending: false }).limit(300),
+    supabase.from('members').select('party').neq('party', null),
   ])
 
   const totalVotes = votesCount ?? 0
@@ -66,6 +68,15 @@ export default async function LandingPage() {
     const id = (bill as { proposer_id: string }).proposer_id
     billCountById[id] = (billCountById[id] ?? 0) + 1
   }
+  const partyStats = Object.entries(
+    (partyRows ?? []).reduce((acc, r: { party: string }) => {
+      acc[r.party] = (acc[r.party] ?? 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  )
+    .map(([party, count]) => ({ party, count }))
+    .sort((a, b) => b.count - a.count)
+
   const top3Ids = Object.entries(billCountById)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
@@ -96,6 +107,7 @@ export default async function LandingPage() {
         thisWeek,
         weekDiff,
         topMembers,
+        partyStats,
       }}
     />
   )

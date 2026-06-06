@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useMemo } from 'react'
 import { cn } from '@/lib/utils'
+import { partyColor } from '@/lib/party-colors'
 
 interface Region {
   name: string
@@ -203,9 +204,10 @@ interface Props {
   className?: string
   onRegionClick?: (name: string) => void
   onRegionHover?: (name: string | null) => void
+  partyStats?: { party: string; count: number }[]
 }
 
-export function KoreaMap({ className, onRegionClick, onRegionHover }: Props) {
+export function KoreaMap({ className, onRegionClick, onRegionHover, partyStats }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<Tooltip | null>(null)
@@ -430,16 +432,16 @@ export function KoreaMap({ className, onRegionClick, onRegionHover }: Props) {
         fontSize: 11,
         color: 'var(--t2)',
       }}>
-        {[
-          { color: '#3D6DC4', label: '더불어민주당 152' },
-          { color: '#C44858', label: '국민의힘 106' },
-          { color: '#3d7da6', label: '조국혁신당 12' },
-          { color: '#6b6b6b', label: '무소속 7' },
-          { color: '#a93333', label: '진보당 4' },
-          { color: '#d97520', label: '개혁신당 3' },
-          { color: '#2cb5aa', label: '기본소득당 1' },
-          { color: '#d96b00', label: '사회민주당 1' },
-        ].map(({ color, label }) => (
+        {(partyStats ?? [
+          { party: '더불어민주당', count: 152 },
+          { party: '국민의힘', count: 106 },
+          { party: '조국혁신당', count: 12 },
+          { party: '무소속', count: 7 },
+          { party: '진보당', count: 4 },
+          { party: '개혁신당', count: 3 },
+          { party: '기본소득당', count: 1 },
+          { party: '사회민주당', count: 1 },
+        ]).map(({ party, count }) => ({ color: partyColor(party), label: `${party} ${count}` })).map(({ color, label }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
             {label}
