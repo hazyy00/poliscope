@@ -14,6 +14,7 @@ interface MemberInfo {
 interface Props {
   regionName: string
   regionShort: string
+  regionShorts?: string[]  // 통합 행정구역 등 복수 SIDO 처리용
   members: MemberInfo[]
 }
 
@@ -62,7 +63,8 @@ function SkeletonMap({ height }: { height: number }) {
   )
 }
 
-export function DistrictMap({ regionShort, members }: Props) {
+export function DistrictMap({ regionShort, regionShorts, members }: Props) {
+  const allShorts = regionShorts ?? [regionShort]
   const containerRef = useRef<HTMLDivElement>(null)
   const [features, setFeatures] = useState<GeoFeature[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,7 +81,7 @@ export function DistrictMap({ regionShort, members }: Props) {
       })
       .then((geojson: { features: GeoFeature[] }) => {
         const filtered = geojson.features
-          .filter(f => f.properties.SIDO === regionShort)
+          .filter(f => allShorts.includes(f.properties.SIDO))
           .map(rewindFeature)
         setFeatures(filtered)
         setLoading(false)
@@ -105,8 +107,9 @@ export function DistrictMap({ regionShort, members }: Props) {
     const map = new Map<string, MemberInfo>()
     for (const m of members) {
       if (!m.district) continue
+      const prefixPattern = allShorts.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
       const withoutRegion = m.district
-        .replace(new RegExp(`^${regionShort}\\s*`), '')
+        .replace(new RegExp(`^(${prefixPattern})\\s*`), '')
         .trim()
       const key = normSGG(withoutRegion)
       if (key) map.set(key, m)

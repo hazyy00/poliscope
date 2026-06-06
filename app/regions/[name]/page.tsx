@@ -33,10 +33,12 @@ export default async function RegionPage({ params }: Props) {
   if (!regionData) notFound()
 
   const supabase = createServerClient()
+  const shorts = regionData.queryShorts ?? [regionData.short]
+  const districtFilter = shorts.map(s => `district.ilike.%${s}%`).join(',')
   const { data: members } = await supabase
     .from('members')
     .select('id, name, party, district, is_pr, photo_url, committee')
-    .ilike('district', `%${regionData.short}%`)
+    .or(districtFilter)
     .eq('is_pr', false)
     .order('district')
 
@@ -133,6 +135,7 @@ export default async function RegionPage({ params }: Props) {
           <DistrictMap
             regionName={decodedName}
             regionShort={regionData.short}
+            regionShorts={regionData.queryShorts}
             members={(members ?? []).map(m => ({
               id: m.id,
               name: m.name,
@@ -183,8 +186,9 @@ export default async function RegionPage({ params }: Props) {
           {members && members.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
               {members.map(m => {
+                const prefixPattern = shorts.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
                 const districtLabel = m.district
-                  ?.replace(new RegExp(`^${regionData.short}\\s*`), '')
+                  ?.replace(new RegExp(`^(${prefixPattern})\\s*`), '')
                   .trim() ?? m.district ?? '—'
                 return (
                   <div key={m.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

@@ -10,6 +10,7 @@ export interface Governor {
 export interface RegionData {
   name: string
   short: string
+  queryShorts?: string[]  // 복수 short prefix가 필요한 통합 행정구역용
   party: string
   seats: string
   rate: string
@@ -66,8 +67,8 @@ export const REGIONS_DATA: RegionData[] = [
     governor: { name: '이원택', title: '도지사', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'jeonbuk' },
   },
   {
-    name: '전라남도', short: '전남', party: '더불어민주당', seats: '10석', rate: '10/10', color: '#3D6DC4',
-    governor: { name: '민형배', title: '시장', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'jeonnam' },
+    name: '전남광주특별시', short: '전남광주', queryShorts: ['전남', '광주'], party: '더불어민주당', seats: '19석', rate: '19/19', color: '#3D6DC4',
+    governor: { name: '민형배', title: '시장', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'jeonnam-gwangju' },
   },
   {
     name: '제주특별자치도', short: '제주', party: '더불어민주당', seats: '2석', rate: '2/2', color: '#3D6DC4',
@@ -84,10 +85,6 @@ export const REGIONS_DATA: RegionData[] = [
   {
     name: '대구광역시', short: '대구', party: '국민의힘', seats: '11석', rate: '11/11', color: '#C44858',
     governor: { name: '추경호', title: '시장', party: '국민의힘', term: '민선 9기 (2026.07 – 2030.06)', slug: 'daegu' },
-  },
-  {
-    name: '광주광역시', short: '광주', party: '더불어민주당', seats: '9석', rate: '9/9', color: '#3D6DC4',
-    governor: { name: '민형배', title: '시장', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'gwangju' },
   },
 
   // ── 이북5도위원회 ─────────────────────────────────────────────
