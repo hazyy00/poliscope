@@ -1,3 +1,8 @@
+export const CATEGORIES = [
+  '경제/재정', '과학/IT', '보건/복지', '교육', '환경/노동',
+  '국방/외교', '교통/건설', '문화/체육', '농업/해양', '정치/법률',
+] as const
+
 export const CATEGORY_COLORS: Record<string, string> = {
   '경제/재정': '#3D6DB5',
   '과학/IT':   '#7C3AED',

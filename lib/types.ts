@@ -29,6 +29,7 @@ export interface Bill {
   title: string
   status: '계류' | '가결' | '부결' | '폐기' | '철회' | '수정가결'
   committee: string | null
+  category: string | null
   proposer_id: string | null
   proposed_at: string | null
   passed_at: string | null
@@ -80,4 +81,38 @@ export interface Attendance {
 export interface PageResult<T> {
   data: T[]
   count: number
+}
+
+// ── AI 큐레이션 (/ai-picks) ─────────────────────────────────────
+
+export interface AiPicksRequest {
+  persona: string      // 공백 정규화 후 2~30자
+  categories: string[] // CATEGORIES 중 1개 이상
+}
+
+export interface AiPicksBill {
+  id: string
+  title: string
+  status: string
+  category: string | null
+  committee: string | null
+  proposed_at: string | null
+  passed_at: string | null
+  proposer_names: string | null
+  cosponsor_count: number
+}
+
+export interface AiPicksAi {
+  briefing: string
+  picks: { billId: string; comment: string }[]
+}
+
+export interface AiPicksResult {
+  ok: true
+  persona: string
+  categories: string[]
+  generatedAt: string
+  cached: boolean
+  ai: AiPicksAi | null // null = AI 생성 실패 시 목록만 제공
+  bills: AiPicksBill[] // 매칭된 전체 법안, 클라이언트가 picks/나머지 분리
 }
