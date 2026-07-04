@@ -67,7 +67,7 @@ export const REGIONS_DATA: RegionData[] = [
     governor: { name: '이원택', title: '도지사', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'jeonbuk' },
   },
   {
-    name: '전남광주특별시', short: '전남광주', queryShorts: ['전남', '광주'], party: '더불어민주당', seats: '19석', rate: '19/19', color: '#3D6DC4',
+    name: '전남광주특별시', short: '전남광주', queryShorts: ['전남', '광주'], party: '더불어민주당', seats: '18석', rate: '18/18', color: '#3D6DC4',
     governor: { name: '민형배', title: '시장', party: '더불어민주당', term: '민선 9기 (2026.07 – 2030.06)', slug: 'jeonnam-gwangju' },
   },
   {

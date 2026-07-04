@@ -34,7 +34,8 @@ export default async function RegionPage({ params }: Props) {
 
   const supabase = createServerClient()
   const shorts = regionData.queryShorts ?? [regionData.short]
-  const districtFilter = shorts.map(s => `district.ilike.%${s}%`).join(',')
+  // prefix 매칭이어야 함 — '%광주%'는 '경기 광주시갑'까지 잡는다
+  const districtFilter = shorts.map(s => `district.ilike.${s}%`).join(',')
   const { data: members } = await supabase
     .from('members')
     .select('id, name, party, district, is_pr, photo_url, committee')

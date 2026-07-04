@@ -29,7 +29,7 @@ export function CompareBar({ label, value, avg, max, color, unit = '', size = 'm
         <span style={{ fontWeight: 600, color: 'var(--m-ink)', fontFamily: 'var(--font-display)', fontSize: valueFs, letterSpacing: '-0.01em' }}>
           {value}
           <span style={{ fontSize: valueFs * 0.65, color: 'var(--m-muted)', fontWeight: 400, marginLeft: 1 }}>{unit}</span>
-          <span style={{ fontSize: avgFs, color: 'var(--m-muted)', fontWeight: 400, marginLeft: 10, fontFamily: 'var(--font-sans)' }}>
+          <span style={{ fontSize: avgFs, color: 'var(--m-muted)', fontWeight: 400, marginLeft: 10, fontFamily: 'var(--font-pretendard)' }}>
             정당 {avg.toFixed(avg % 1 === 0 ? 0 : 1)}{unit}
           </span>
         </span>
