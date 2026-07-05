@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const NAV_LINKS = [
   { label: '국회의원', href: '/members' },
   { label: '법안', href: '/bills' },
+  { label: 'AI 큐레이션', href: '/ai-picks' },
 ]
 
 export function SiteNav() {
