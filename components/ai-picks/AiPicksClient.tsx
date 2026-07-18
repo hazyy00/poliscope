@@ -32,12 +32,12 @@ export function AiPicksClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ persona: persona.trim(), categories: selected }),
       })
-      const data = await res.json()
-      if (res.ok) {
+      const data = await res.json().catch(() => null)
+      if (res.ok && data) {
         setResult(data as AiPicksResult)
         setStatus('done')
       } else {
-        setErrorMsg(data.error ?? '오류가 발생했습니다. 다시 시도해주세요.')
+        setErrorMsg(data?.error ?? `서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (${res.status})`)
         setStatus('error')
       }
     } catch {
