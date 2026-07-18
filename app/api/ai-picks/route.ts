@@ -40,10 +40,17 @@ const SYSTEM_PROMPT = `당신은 대한민국 국회 법안을 시민의 눈높�
 { "briefing": "3~5문장 브리핑", "picks": [{ "id": "법안 id", "comment": "한 문장 코멘트" }] }`
 
 function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
-  return new Redis({ url, token })
+  // 환경 변수에 따옴표가 섞여 들어오는 실수를 흡수한다 (예: '"https://..."')
+  const clean = (v: string | undefined) => (v ?? '').trim().replace(/^["']+|["']+$/g, '')
+  const url = clean(process.env.UPSTASH_REDIS_REST_URL)
+  const token = clean(process.env.UPSTASH_REDIS_REST_TOKEN)
+  if (!url.startsWith('https://') || !token) return null
+  try {
+    return new Redis({ url, token })
+  } catch (e) {
+    console.error('[ai-picks] Redis 초기화 실패:', e)
+    return null
+  }
 }
 
 function cacheKey(persona: string, categories: string[]): string {
@@ -97,7 +104,8 @@ async function generateAi(
       }
 
       return { briefing: parsed.briefing.trim().slice(0, 1000), picks }
-    } catch {
+    } catch (e) {
+      console.error(`[ai-picks] Anthropic 호출 실패 (시도 ${attempt + 1}/2):`, e)
       if (attempt === 0) await new Promise(r => setTimeout(r, 2000))
     }
   }
@@ -129,13 +137,17 @@ export async function POST(req: Request) {
   const redis = getRedis()
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
 
-  // 2. 분당 레이트리밋
+  // 2. 분당 레이트리밋 (Redis 장애 시 리밋 없이 진행)
   if (redis) {
-    const key = `ai-picks:rl:${ip}`
-    const count = await redis.incr(key)
-    if (count === 1) await redis.expire(key, WINDOW_SEC)
-    if (count > RATE_LIMIT) {
-      return NextResponse.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 })
+    try {
+      const key = `ai-picks:rl:${ip}`
+      const count = await redis.incr(key)
+      if (count === 1) await redis.expire(key, WINDOW_SEC)
+      if (count > RATE_LIMIT) {
+        return NextResponse.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 })
+      }
+    } catch (e) {
+      console.error('[ai-picks] 분당 레이트리밋 확인 실패:', e)
     }
   }
 
@@ -153,13 +165,17 @@ export async function POST(req: Request) {
     }
   }
 
-  // 4. 일일 한도 (Anthropic 비용이 드는 경로만)
+  // 4. 일일 한도 (Anthropic 비용이 드는 경로만, Redis 장애 시 리밋 없이 진행)
   if (redis) {
-    const dailyKey = `ai-picks:rld:${ip}`
-    const count = await redis.incr(dailyKey)
-    if (count === 1) await redis.expire(dailyKey, DAILY_WINDOW_SEC)
-    if (count > DAILY_LIMIT) {
-      return NextResponse.json({ error: '오늘 이용 가능한 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.' }, { status: 429 })
+    try {
+      const dailyKey = `ai-picks:rld:${ip}`
+      const count = await redis.incr(dailyKey)
+      if (count === 1) await redis.expire(dailyKey, DAILY_WINDOW_SEC)
+      if (count > DAILY_LIMIT) {
+        return NextResponse.json({ error: '오늘 이용 가능한 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.' }, { status: 429 })
+      }
+    } catch (e) {
+      console.error('[ai-picks] 일일 한도 확인 실패:', e)
     }
   }
 
