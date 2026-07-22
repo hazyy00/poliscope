@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Image from 'next/image'
 import { CompareBar } from './CompareBar'
 import { partyColor, partyDot, partyTone, termLabel } from '@/lib/party-colors'
@@ -30,6 +31,23 @@ interface BenchmarkCardProps {
   member: EnrichedMember
   partyAvg: PartyAverage
   billsBarMax: number
+}
+
+function MemberPhoto({ src, name, party, size }: { src: string; name: string; party: string | null; size: number }) {
+  const [error, setError] = useState(false)
+  if (error) return <MemberPhotoPlaceholder name={name} party={party} size={size} />
+  return (
+    <div style={{ width: size, height: size, borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
+      <Image
+        src={src}
+        alt={name}
+        fill
+        style={{ objectFit: 'cover', objectPosition: 'top center' }}
+        sizes={`${size}px`}
+        onError={() => setError(true)}
+      />
+    </div>
+  )
 }
 
 function MemberPhotoPlaceholder({ name, party, size }: { name: string; party: string | null; size: number }) {
@@ -80,16 +98,7 @@ export function BenchmarkCard({ member, partyAvg, billsBarMax }: BenchmarkCardPr
       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
         <div style={{ flexShrink: 0 }}>
           {member.photo_url ? (
-            <div style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
-              <Image
-                src={member.photo_url}
-                alt={member.name}
-                fill
-                style={{ objectFit: 'cover', objectPosition: 'top center' }}
-                sizes="80px"
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-              />
-            </div>
+            <MemberPhoto src={member.photo_url} name={member.name} party={member.party} size={80} />
           ) : (
             <MemberPhotoPlaceholder name={member.name} party={member.party} size={80} />
           )}

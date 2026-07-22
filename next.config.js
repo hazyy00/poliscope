@@ -15,8 +15,12 @@ const nextConfig = {
     ]
   },
   images: {
-    // 의원 사진은 사실상 불변 — Supabase의 max-age=3600을 덮어써
-    // 시간당 재변환(Vercel Transformations/Cache Writes 과금)을 방지
+    // Vercel Image Optimization의 Transformations 무료 한도(5K)를 초과해
+    // 최적화 이미지가 생성되지 못하면 의원 사진이 빈 칸으로 렌더됨.
+    // 최적화를 끄고 원본을 직접 서빙 — Transformations 과금이 0이 됨.
+    // 사진 원본이 작고 Origin/Data Transfer 여유가 충분해 영향은 미미.
+    unoptimized: true,
+    // 아래 항목은 unoptimized: true 동안 비활성(참고용으로 유지).
     minimumCacheTTL: 2678400, // 31일
     formats: ['image/webp'],
     // 실제 렌더 폭: 아바타 20~32px, 벤치마크 80px, 카드·프로필 180~220px
